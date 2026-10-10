@@ -1,8 +1,9 @@
 // Quote editor: live totals (mirrors §2 integer-cents math), row management, save/send.
 
-import { $, $$, api, absoluteUrl, copyText, flash, setBusy, toast } from './common.js';
+import { $, $$, api, absoluteUrl, copyText, errorText, flash, setBusy, toast } from './common.js';
 import { centsFromPriceInput, formatMoney } from './format.js';
 
+const S = window.__I18N__?.t || {};
 const boot = window.__BOOT__ || {};
 const quote = boot.quote || null;
 const editable = Boolean(boot.editable);
@@ -54,15 +55,16 @@ function recalc() {
 function renumber() {
   $$('#items-body .item-row').forEach((row, index) => {
     const n = index + 1;
-    const label = (cls, what) => {
+    const text = (key, fallback) => (S[key] || fallback).replace('{n}', n);
+    const label = (cls, aria) => {
       const el = row.querySelector(cls);
-      if (el) el.setAttribute('aria-label', `Line item ${n} ${what}`);
+      if (el) el.setAttribute('aria-label', aria);
     };
-    label('.item-desc', 'description');
-    label('.item-qty', 'quantity');
-    label('.item-price', 'unit price');
+    label('.item-desc', text('ed.item.aria_desc', 'Line item {n} description'));
+    label('.item-qty', text('ed.item.aria_qty', 'Line item {n} quantity'));
+    label('.item-price', text('ed.item.aria_price', 'Line item {n} unit price'));
     const remove = row.querySelector('.item-remove');
-    if (remove) remove.setAttribute('aria-label', `Remove line item ${n}`);
+    if (remove) remove.setAttribute('aria-label', text('ed.item.aria_remove', 'Remove line item {n}'));
   });
 }
 
@@ -86,17 +88,18 @@ function clearRow(row) {
 }
 
 function collectPayload() {
+  const lineText = (key, fallback, n) => (S[key] || fallback).replace('{n}', n);
   const title = String($('#quote-title')?.value || '').trim();
-  if (!title) return { error: 'Enter a quote title.' };
-  if (title.length > 200) return { error: 'Quote title must be 200 characters or less.' };
+  if (!title) return { error: S['ed.err.title_required'] || 'Enter a quote title.' };
+  if (title.length > 200) return { error: S['ed.err.title_long'] || 'Quote title must be 200 characters or less.' };
 
   const clientName = String($('#client-name')?.value || '').trim();
-  if (!clientName) return { error: 'Enter a client name.' };
-  if (clientName.length > 120) return { error: 'Client name must be 120 characters or less.' };
+  if (!clientName) return { error: S['ed.err.client_required'] || 'Enter a client name.' };
+  if (clientName.length > 120) return { error: S['ed.err.client_long'] || 'Client name must be 120 characters or less.' };
 
   const clientEmail = String($('#client-email')?.value || '').trim();
   if (clientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
-    return { error: 'Enter a valid client email or leave it blank.' };
+    return { error: S['ed.err.email_invalid'] || 'Enter a valid client email or leave it blank.' };
   }
 
   const items = [];
@@ -107,29 +110,33 @@ function collectPayload() {
     if (isEmpty) continue;
     const n = i + 1;
     const desc = v.desc.trim();
-    if (!desc) return { error: `Line ${n}: add a description.` };
+    if (!desc) return { error: lineText('ed.err.line_desc', 'Line {n}: add a description.', n) };
     if (!Number.isFinite(v.qty) || v.qty <= 0) {
-      return { error: `Line ${n}: quantity must be greater than 0.` };
+      return { error: lineText('ed.err.line_qty_pos', 'Line {n}: quantity must be greater than 0.', n) };
     }
-    if (v.qty > 100000) return { error: `Line ${n}: quantity must be 100,000 or less.` };
+    if (v.qty > 100000) {
+      return { error: lineText('ed.err.line_qty_max', 'Line {n}: quantity must be 100,000 or less.', n) };
+    }
     if (v.unitCents === null || v.unitCents < 0) {
-      return { error: `Line ${n}: enter a valid unit price (0 or more).` };
+      return { error: lineText('ed.err.line_price', 'Line {n}: enter a valid unit price (0 or more).', n) };
     }
-    if (v.unitCents > 1e12) return { error: `Line ${n}: unit price is too large.` };
+    if (v.unitCents > 1e12) {
+      return { error: lineText('ed.err.line_price_max', 'Line {n}: unit price is too large.', n) };
+    }
     items.push({ desc, qty: v.qty, unit_price_cents: v.unitCents });
   }
-  if (items.length === 0) return { error: 'Add at least one line item.' };
-  if (items.length > 50) return { error: 'A quote can have at most 50 line items.' };
+  if (items.length === 0) return { error: S['ed.err.items_min'] || 'Add at least one line item.' };
+  if (items.length > 50) return { error: S['ed.err.items_max'] || 'A quote can have at most 50 line items.' };
 
   const discountRaw = String($('#discount-pct')?.value ?? '').trim();
   const discountPct = discountRaw === '' ? 0 : Number.parseFloat(discountRaw);
   if (!Number.isFinite(discountPct) || discountPct < 0 || discountPct > 100) {
-    return { error: 'Discount must be between 0 and 100.' };
+    return { error: S['ed.err.discount_range'] || 'Discount must be between 0 and 100.' };
   }
   const taxRaw = String($('#tax-pct')?.value ?? '').trim();
   const taxPct = taxRaw === '' ? 0 : Number.parseFloat(taxRaw);
   if (!Number.isFinite(taxPct) || taxPct < 0 || taxPct > 100) {
-    return { error: 'Tax must be between 0 and 100.' };
+    return { error: S['ed.err.tax_range'] || 'Tax must be between 0 and 100.' };
   }
 
   return {
@@ -179,15 +186,15 @@ if (editable) {
       return;
     }
     const btn = $('#save-btn');
-    setBusy(btn, true, 'Saving…');
+    setBusy(btn, true, S['ed.busy.save'] || 'Saving…');
     try {
       if (quote) {
         await api(`/api/quotes/${quote.id}`, { method: 'PUT', body: result.payload });
-        toast('Changes saved.');
+        toast(S['ed.toast.saved'] || 'Changes saved.');
       } else {
         const data = await api('/api/quotes', { method: 'POST', body: result.payload });
         const id = Number(data?.quote?.id) || 0;
-        flash('Quote saved. Review it, then send the link to your client.');
+        flash(S['ed.flash.saved'] || 'Quote saved. Review it, then send the link to your client.');
         location.assign(`/app/quotes/${id}/edit`);
         return;
       }
@@ -195,12 +202,12 @@ if (editable) {
       if (error.code === 'free_limit_reached') {
         const dialog = $('#limit-dialog');
         if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
-        else toast(error.message, 'error');
+        else toast(errorText(error), 'error');
       } else if (error.code === 'not_draft') {
-        toast('This quote can no longer be edited.', 'error');
+        toast(errorText(error), 'error');
         reloadSoon();
       } else {
-        toast(error.message, 'error');
+        toast(errorText(error), 'error');
       }
     } finally {
       setBusy(btn, false);
@@ -211,18 +218,18 @@ if (editable) {
     const id = Number($('#send-btn')?.dataset.quoteId) || (quote && quote.id);
     if (!id) return;
     const btn = $('#send-btn');
-    setBusy(btn, true, 'Sending…');
+    setBusy(btn, true, S['ed.busy.send'] || 'Sending…');
     try {
       await api(`/api/quotes/${id}/send`, { method: 'POST' });
-      flash('Quote sent. Share the public link with your client.');
+      flash(S['ed.flash.sent'] || 'Quote sent. Share the public link with your client.');
       location.reload();
     } catch (error) {
       setBusy(btn, false);
       if (error.code === 'already_final' || error.code === 'not_draft') {
-        toast(error.message, 'error');
+        toast(errorText(error), 'error');
         reloadSoon();
       } else {
-        toast(error.message, 'error');
+        toast(errorText(error), 'error');
       }
     }
   });
@@ -234,14 +241,14 @@ if (copyBtn) {
     const input = $('#send-url');
     const value = String(input?.value || '').trim();
     if (!value) {
-      toast('No link to copy yet.', 'error');
+      toast(S['ed.toast.no_link'] || 'No link to copy yet.', 'error');
       return;
     }
     try {
       await copyText(absoluteUrl(value));
-      toast('Link copied to clipboard.');
+      toast(S['toast.link_copied'] || 'Link copied to clipboard.');
     } catch {
-      toast('Could not copy the link. Select and copy it manually.', 'error');
+      toast(S['ed.copy_failed'] || 'Could not copy the link. Select and copy it manually.', 'error');
     }
   });
 }

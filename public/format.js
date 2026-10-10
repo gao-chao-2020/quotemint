@@ -9,23 +9,6 @@ export function formatMoney(cents, currency = 'USD') {
   }
 }
 
-export function formatDate(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(date);
-}
-
-export function formatDateTime(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short',
-  }).format(date);
-}
-
 // Parses a price input in currency units ("12.50") into integer cents. Returns null when unparseable.
 export function centsFromPriceInput(raw) {
   const parsed = Number.parseFloat(String(raw ?? '').trim());

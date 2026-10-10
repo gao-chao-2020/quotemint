@@ -2,9 +2,12 @@
 
 const FLASH_KEY = 'qm_flash';
 
+// Server-injected strings (contract §16); EN literals below are the no-JS fallback.
+const S = window.__I18N__?.t || {};
+
 export class ApiError extends Error {
   constructor(code, message) {
-    super(message || 'Something went wrong. Please try again.');
+    super(message || S['errcode.unknown'] || 'Something went wrong. Please try again.');
     this.name = 'ApiError';
     this.code = code || 'unknown';
   }
@@ -31,14 +34,14 @@ export async function api(path, { method = 'GET', body } = {}) {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError('network', 'Network error — check your connection and try again.');
+    throw new ApiError('network', S['errcode.network'] || 'Network error — check your connection and try again.');
   }
 
   if (response.status === 401) {
     const onAuthPage = /^\/(login|signup)/.test(location.pathname);
     if (!onAuthPage) {
       location.assign('/login');
-      throw new ApiError('not_authenticated', 'Please sign in to continue.');
+      throw new ApiError('not_authenticated', S['errcode.not_authenticated'] || 'Please sign in to continue.');
     }
   }
 
@@ -51,9 +54,18 @@ export async function api(path, { method = 'GET', body } = {}) {
 
   if (!payload || payload.ok !== true) {
     const error = payload && payload.error ? payload.error : {};
-    throw new ApiError(error.code || `http_${response.status}`, error.message || 'Something went wrong. Please try again.');
+    throw new ApiError(error.code || `http_${response.status}`, error.message || S['errcode.unknown'] || 'Something went wrong. Please try again.');
   }
   return payload.data === undefined ? null : payload.data;
+}
+
+// Resolution chain: page-context override -> errcode.<code> -> server EN message -> generic.
+export function errorText(error, overrides = null) {
+  const code = error?.code || 'unknown';
+  if (overrides && overrides[code]) return overrides[code];
+  const localized = S[`errcode.${code}`];
+  if (localized) return localized;
+  return error?.message || S['errcode.unknown'] || 'Something went wrong. Please try again.';
 }
 
 export function toast(message, type = 'info') {
@@ -125,7 +137,7 @@ export function absoluteUrl(path) {
   return new URL(path, location.origin).href;
 }
 
-export function setBusy(button, busy, busyLabel = 'Working…') {
+export function setBusy(button, busy, busyLabel = S['common.working'] || 'Working…') {
   if (!button) return;
   if (busy) {
     if (!button.dataset.idleLabel) button.dataset.idleLabel = button.textContent.trim();

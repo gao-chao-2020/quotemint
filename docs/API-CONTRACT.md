@@ -269,3 +269,14 @@ These refine ambiguities; the frozen sections above otherwise stand as written:
 3. Webhook success body is the literal `{"received":true}` per §10, not the `ok`/`data` envelope.
 4. `customer.subscription.deleted` also clears `plan_renews_at` (sets it to NULL) in addition to downgrading to `free`.
 5. View analytics (product decision, 2026-10-10): a `view` event is recorded on **every** public quote-page GET when status is not `draft`, deduped to at most one event per 60 seconds per quote (refresh-spam guard). The status upgrade `sent → viewed` still happens only on the first view. The editor page receives `events` (Pro: `listEvents` array; Free: `null`) and renders the Activity panel.
+
+## 16. i18n — EN + ZH (iteration 2, frozen 2026-10-10)
+
+- Languages: `en` (default) and `zh` (Simplified Chinese). Cookie: `lang=zh` — `Path=/; Max-Age=31536000; SameSite=Lax`, NOT HttpOnly, `Secure` iff BASE_URL is https.
+- Resolution order (server-side): `lang` cookie if exactly `en`|`zh` → `Accept-Language` header (any `zh*` tag → `zh`, else `en`) → `en`. Applies to every page including `/q/:token` (client quote pages follow the viewer's language).
+- Backend (owner: backend): `src/lib/lang.js` exports `resolveLang(req)`. Route `GET /lang/:code` (code must be `en`|`zh`): set cookie, then 302 to `next` query param — `next` must start with `/` and NOT with `//` and must not contain `\` (open-redirect guard), else redirect `/`. All seven `render*()` page calls pass `lang`; `<html lang="...">` reflects it.
+- Frontend (owner: frontend): `src/templates/i18n.js` exports `t(lang, key, vars?)` and `LANGS`; contains the full EN/ZH dictionary; unknown key must return the EN string (or the key) — never throw. ALL template strings go through `t()`. Client JS: layout embeds `window.__I18N__ = {lang, t:{...clientKeys}}` via the existing bootScript escaping; public/*.js read it with EN literal fallbacks. Switcher: server-rendered nav links `EN | 中文`, inactive language links to `/lang/<other>?next=<current path>` (must work without JS).
+- API JSON error `message` stays English (fallback); every user-visible error code must additionally be mapped to localized copy client-side.
+- Translation bar: idiomatic, marketing-grade Chinese — not literal machine translation. Brand audits the zh copy afterwards.
+- Ownership additions (§14): `src/lib/lang.js` → backend; `src/templates/i18n.js` → frontend.
+- QA tests (§5 owner): `/lang/zh?next=/app` sets cookie + 302 to /app; `/lang/en?next=https://evil.com` and `?next=//evil.com` → 302 to `/`; zh probe: landing page with `lang=zh` cookie contains a known Chinese string; Accept-Language `zh-CN` without cookie renders zh; switcher link present in nav.

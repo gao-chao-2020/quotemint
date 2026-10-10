@@ -207,6 +207,15 @@ textarea.input { resize: vertical; min-height: 76px; line-height: 1.55; }
 .footer-bottom { border-top: 1px solid var(--line); padding-top: 18px; padding-bottom: 18px; font-size: 13px; color: var(--ink-500); }
 .app-footer { border-top: 1px solid var(--line); }
 .app-footer-inner { display: flex; justify-content: space-between; gap: 16px; padding-top: 26px; padding-bottom: 26px; font-size: 13.5px; color: var(--ink-500); }
+/* Language switcher (contract §16) ----------------------------------------- */
+.lang-switch { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-500); white-space: nowrap; }
+.lang-current { color: var(--ink-900); }
+.lang-sep { color: var(--ink-300); }
+.lang-link { color: var(--ink-500); text-decoration: none; }
+.lang-link:hover { color: var(--ink-900); text-decoration: underline; text-underline-offset: 3px; }
+.lang-switch-mobile { justify-content: flex-start; padding: 10px 12px 2px; border-top: 1px solid var(--line); margin-top: 6px; }
+.auth-lang { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.doc-foot .lang-switch { display: flex; justify-content: center; margin-top: 12px; }
 /* 10. Landing -------------------------------------------------------------- */
 .hero { position: relative; padding: 88px 0 80px; overflow: hidden; }
 .hero::before {

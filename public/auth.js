@@ -1,15 +1,12 @@
 // Login / signup form handling.
 
-import { $, api, setBusy } from './common.js';
+import { $, api, errorText, setBusy } from './common.js';
 
-const ERROR_COPY = {
-  invalid_email: 'Enter a valid email address.',
-  invalid_password: 'Password must be at least 8 characters.',
-  invalid_name: 'Enter your name.',
-  email_taken: 'An account with this email already exists. Try logging in instead.',
-  invalid_credentials: 'Email or password is incorrect.',
-  rate_limited: 'Too many attempts. Wait a minute and try again.',
-  csrf: 'Your session expired. Refresh the page and try again.',
+const S = window.__I18N__?.t || {};
+
+// Auth-form copy that intentionally differs from the shared errcode.* wording.
+const ERROR_OVERRIDES = {
+  rate_limited: S['auth.err.rate_limited'] || 'Too many attempts. Wait a minute and try again.',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,12 +29,14 @@ function clearError() {
 }
 
 function validate(mode, data) {
-  if (!EMAIL_RE.test(data.email)) return 'Enter a valid email address.';
+  if (!EMAIL_RE.test(data.email)) return S['errcode.invalid_email'] || 'Enter a valid email address.';
   if (mode === 'signup') {
-    if (!data.name || !data.name.trim()) return 'Enter your name.';
-    if (!data.password || data.password.length < 8) return 'Password must be at least 8 characters.';
+    if (!data.name || !data.name.trim()) return S['errcode.invalid_name'] || 'Enter your name.';
+    if (!data.password || data.password.length < 8) {
+      return S['errcode.invalid_password'] || 'Password must be at least 8 characters.';
+    }
   } else if (!data.password) {
-    return 'Enter your password.';
+    return S['auth.err.enter_password'] || 'Enter your password.';
   }
   return null;
 }
@@ -66,7 +65,7 @@ function validate(mode, data) {
         return;
       }
 
-      setBusy(submit, true, mode === 'signup' ? 'Creating account…' : 'Logging in…');
+      setBusy(submit, true, mode === 'signup' ? S['auth.busy.signup'] || 'Creating account…' : S['auth.busy.login'] || 'Logging in…');
       try {
         await api(mode === 'signup' ? '/api/auth/signup' : '/api/auth/login', {
           method: 'POST',
@@ -75,7 +74,7 @@ function validate(mode, data) {
         location.assign('/app');
       } catch (error) {
         setBusy(submit, false);
-        showError(form, ERROR_COPY[error.code] || error.message);
+        showError(form, errorText(error, ERROR_OVERRIDES));
       }
     });
   }

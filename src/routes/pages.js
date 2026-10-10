@@ -8,6 +8,7 @@ import {
   renderError
 } from '../templates/index.js';
 import { quotaFor } from '../lib/gating.js';
+import { resolveLang, safeNext } from '../lib/lang.js';
 import { fetchQuoteByToken, listEvents, listQuoteRows, markViewed, quoteRowToFull } from '../lib/quotes.js';
 import { isConfigured, isDemoMode } from '../lib/stripe.js';
 
@@ -22,7 +23,7 @@ function redirect(res, location) {
 }
 
 export function landingPage(req, res) {
-  sendHtml(res, 200, renderLanding({}));
+  sendHtml(res, 200, renderLanding({ lang: resolveLang(req), path: req.url.split('?')[0] }));
 }
 
 export function authPage(req, res, ctx, params) {
@@ -30,7 +31,20 @@ export function authPage(req, res, ctx, params) {
     redirect(res, '/app');
     return;
   }
-  sendHtml(res, 200, renderAuth({ mode: params.mode }));
+  sendHtml(res, 200, renderAuth({ mode: params.mode, lang: resolveLang(req), path: req.url.split('?')[0] }));
+}
+
+export function langRoute(req, res, ctx, params) {
+  const code = params.code;
+  if (code !== 'en' && code !== 'zh') {
+    redirect(res, '/');
+    return;
+  }
+  const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?') + 1) : '';
+  const next = new URLSearchParams(query).get('next');
+  const secure = String(ctx.baseUrl || '').startsWith('https') ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `lang=${code}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`);
+  redirect(res, safeNext(next));
 }
 
 export function dashboardPage(req, res, ctx) {
@@ -42,7 +56,11 @@ export function dashboardPage(req, res, ctx) {
     const { quote, totals } = quoteRowToFull(row);
     return { ...quote, total_cents: totals.total_cents, totals, views: row.views };
   });
-  sendHtml(res, 200, renderDashboard({ user: ctx.user, quotes, quota: quotaFor(ctx.db, ctx.user) }));
+  sendHtml(
+    res,
+    200,
+    renderDashboard({ user: ctx.user, quotes, quota: quotaFor(ctx.db, ctx.user), lang: resolveLang(req), path: req.url.split('?')[0] })
+  );
 }
 
 export function newQuotePage(req, res, ctx) {
@@ -50,7 +68,11 @@ export function newQuotePage(req, res, ctx) {
     redirect(res, '/login');
     return;
   }
-  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: null, events: null, quota: quotaFor(ctx.db, ctx.user) }));
+  sendHtml(
+    res,
+    200,
+    renderEditor({ user: ctx.user, quote: null, events: null, quota: quotaFor(ctx.db, ctx.user), lang: resolveLang(req), path: req.url.split('?')[0] })
+  );
 }
 
 export function editQuotePage(req, res, ctx, params) {
@@ -68,7 +90,11 @@ export function editQuotePage(req, res, ctx, params) {
   }
   const { quote, totals } = quoteRowToFull(row);
   const events = ctx.user.plan === 'pro' ? listEvents(ctx.db, id) : null;
-  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: { ...quote, totals }, events, quota: quotaFor(ctx.db, ctx.user) }));
+  sendHtml(
+    res,
+    200,
+    renderEditor({ user: ctx.user, quote: { ...quote, totals }, events, quota: quotaFor(ctx.db, ctx.user), lang: resolveLang(req), path: req.url.split('?')[0] })
+  );
 }
 
 export function billingPage(req, res, ctx) {
@@ -76,7 +102,11 @@ export function billingPage(req, res, ctx) {
     redirect(res, '/login');
     return;
   }
-  sendHtml(res, 200, renderBilling({ user: ctx.user, billingEnabled: isConfigured(), demoMode: isDemoMode() }));
+  sendHtml(
+    res,
+    200,
+    renderBilling({ user: ctx.user, billingEnabled: isConfigured(), demoMode: isDemoMode(), lang: resolveLang(req), path: req.url.split('?')[0] })
+  );
 }
 
 export function publicQuotePage(req, res, ctx, params) {
@@ -96,7 +126,7 @@ export function publicQuotePage(req, res, ctx, params) {
   sendHtml(
     res,
     200,
-    renderPublicQuote({ quote: fullQuote, totals, branding, showBadge: owner ? owner.plan === 'free' : true })
+    renderPublicQuote({ quote: fullQuote, totals, branding, showBadge: owner ? owner.plan === 'free' : true, lang: resolveLang(req), path: req.url.split('?')[0] })
   );
 }
 

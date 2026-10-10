@@ -1,27 +1,29 @@
 // Landing page (GET /). Marketing sections: hero, how it works, features, pricing, FAQ.
+// All copy resolves through the §16 dictionary; EN values are the audited originals.
 
 import { esc, icon, layout } from './layout.js';
+import { t } from './i18n.js';
 
-function heroMock() {
+function heroMock(lang) {
   return `<div class="mock" aria-hidden="true">
 <div class="mock-card">
 <div class="mock-head">
-<div class="mock-issuer"><span class="mock-logo"></span><span class="mock-issuer-name">Northwind Studio</span></div>
-<span class="pill pill-sent">Sent</span>
+<div class="mock-issuer"><span class="mock-logo"></span><span class="mock-issuer-name">${esc(t(lang, 'landing.mock.issuer'))}</span></div>
+<span class="pill pill-sent">${esc(t(lang, 'status.sent'))}</span>
 </div>
-<div class="mock-title">Brand identity redesign</div>
-<div class="mock-client">Prepared for Acme Co.</div>
+<div class="mock-title">${esc(t(lang, 'landing.mock.title'))}</div>
+<div class="mock-client">${esc(t(lang, 'landing.mock.client'))}</div>
 <div class="mock-items">
 <div class="mock-row"><span class="mock-bar" style="width:72%"></span><span class="mock-amt">$2,400.00</span></div>
 <div class="mock-row"><span class="mock-bar" style="width:48%"></span><span class="mock-amt">$1,250.00</span></div>
 <div class="mock-row"><span class="mock-bar" style="width:60%"></span><span class="mock-amt">$1,200.00</span></div>
 </div>
-<div class="mock-total"><span>Total</span><strong>$4,850.00</strong></div>
-<div class="mock-actions"><span class="mock-btn">Accept quote</span><span class="mock-btn mock-btn-ghost">Decline</span></div>
-<div class="mock-stamp">ACCEPTED</div>
+<div class="mock-total"><span>${esc(t(lang, 'landing.mock.total'))}</span><strong>$4,850.00</strong></div>
+<div class="mock-actions"><span class="mock-btn">${esc(t(lang, 'landing.mock.accept'))}</span><span class="mock-btn mock-btn-ghost">${esc(t(lang, 'landing.mock.decline'))}</span></div>
+<div class="mock-stamp">${esc(t(lang, 'landing.mock.stamp'))}</div>
 </div>
-<div class="mock-chip mock-chip-view">${icon('eye', 15)}<span>Viewed 2 minutes ago</span></div>
-<div class="mock-chip mock-chip-sign">${icon('check-circle', 15)}<span>Signed by Jordan Lee</span></div>
+<div class="mock-chip mock-chip-view">${icon('eye', 15)}<span>${esc(t(lang, 'landing.mock.viewed'))}</span></div>
+<div class="mock-chip mock-chip-sign">${icon('check-circle', 15)}<span>${esc(t(lang, 'landing.mock.signed'))}</span></div>
 </div>`;
 }
 
@@ -52,37 +54,39 @@ function faqItem(question, answer, open = false) {
 </details>`;
 }
 
-export function renderLanding() {
-  const title = 'QuoteMint — Send a quote. Know the moment it\'s opened.';
-  const description = 'Send a quote as a link, see when your client opens it, and get it accepted online with their typed name. Free for 3 quotes a month; Pro $9/month.';
+export function renderLanding({ lang = 'en', path = '/' } = {}) {
+  const title = t(lang, 'landing.meta.title');
+  const description = t(lang, 'landing.meta.description');
+  const period = esc(t(lang, 'landing.pricing.period'));
+  const proTag = t(lang, 'nav.plan.pro');
 
   const body = `
 <section class="hero">
 <div class="container hero-grid">
 <div class="hero-copy">
-<p class="eyebrow">Quote-to-cash for freelancers</p>
-<h1 class="hero-title">Send a quote. <span class="accent">Know the moment it&rsquo;s opened.</span></h1>
-<p class="hero-sub">QuoteMint turns your quote into a polished link your client can view and accept in seconds. Collect acceptance signed with their name (typed name + timestamp) — and stop chasing &ldquo;did you get my email?&rdquo;</p>
+<p class="eyebrow">${esc(t(lang, 'landing.hero.eyebrow'))}</p>
+<h1 class="hero-title">${t(lang, 'landing.hero.title')}</h1>
+<p class="hero-sub">${t(lang, 'landing.hero.sub')}</p>
 <div class="hero-actions">
-<a class="btn btn-primary btn-lg" href="/signup">Start free</a>
-<a class="btn btn-secondary btn-lg" href="#how">See how it works</a>
+<a class="btn btn-primary btn-lg" href="/signup">${esc(t(lang, 'landing.hero.cta'))}</a>
+<a class="btn btn-secondary btn-lg" href="#how">${esc(t(lang, 'landing.hero.cta_secondary'))}</a>
 </div>
-<p class="hero-note">Free plan — 3 quotes a month · Pro $9/mo · No credit card required</p>
+<p class="hero-note">${t(lang, 'landing.hero.note')}</p>
 </div>
-${heroMock()}
+${heroMock(lang)}
 </div>
 </section>
 
 <section class="section" id="how">
 <div class="container">
 <div class="section-head">
-<h2 class="section-title">From quote to yes in three steps</h2>
-<p class="section-sub">No client accounts, no PDF attachments, no back-and-forth.</p>
+<h2 class="section-title">${esc(t(lang, 'landing.how.title'))}</h2>
+<p class="section-sub">${esc(t(lang, 'landing.how.sub'))}</p>
 </div>
 <ol class="steps">
-${stepCard('1', 'Build your quote', 'file', 'Add line items, quantities, discount, and tax. Totals update live — no spreadsheet detours.')}
-${stepCard('2', 'Send a link', 'link', 'Share one link by email or chat. Your client opens it in any browser — nothing to install or sign up for.')}
-${stepCard('3', 'Get a yes', 'check-circle', 'Your client reviews and accepts with their name. You see opens and acceptance the moment they happen.')}
+${stepCard('1', t(lang, 'landing.step1.title'), 'file', t(lang, 'landing.step1.body'))}
+${stepCard('2', t(lang, 'landing.step2.title'), 'link', t(lang, 'landing.step2.body'))}
+${stepCard('3', t(lang, 'landing.step3.title'), 'check-circle', t(lang, 'landing.step3.body'))}
 </ol>
 </div>
 </section>
@@ -90,16 +94,16 @@ ${stepCard('3', 'Get a yes', 'check-circle', 'Your client reviews and accepts wi
 <section class="section section-soft" id="features">
 <div class="container">
 <div class="section-head">
-<h2 class="section-title">Everything a quote needs to close</h2>
-<p class="section-sub">Built for the quiet admin work that wins freelance deals.</p>
+<h2 class="section-title">${esc(t(lang, 'landing.features.title'))}</h2>
+<p class="section-sub">${esc(t(lang, 'landing.features.sub'))}</p>
 </div>
 <ul class="features">
-${featureCard('eye', 'Open tracking', 'See when your quote is opened — follow up at the right moment instead of guessing.')}
-${featureCard('pen', 'Online acceptance', 'Clients accept with their full name and a timestamped e-signature record. No printing, no scanning.')}
-${featureCard('printer', 'Print-perfect PDFs', 'Every quote is laid out for clean A4 printing. Save as PDF straight from the browser.')}
-${featureCard('palette', 'Your brand on every quote', 'Your company name, wordmark, and brand color on every page you send.', 'Pro')}
-${featureCard('link', 'Links that never expire', 'Share a quote link anytime — it always shows the latest state: pending, accepted, or declined.')}
-${featureCard('chart', 'Full view analytics', 'See every open with its timestamp, so you know which quotes are warm.', 'Pro')}
+${featureCard('eye', t(lang, 'landing.feature1.title'), t(lang, 'landing.feature1.body'))}
+${featureCard('pen', t(lang, 'landing.feature2.title'), t(lang, 'landing.feature2.body'))}
+${featureCard('printer', t(lang, 'landing.feature3.title'), t(lang, 'landing.feature3.body'))}
+${featureCard('palette', t(lang, 'landing.feature4.title'), t(lang, 'landing.feature4.body'), proTag)}
+${featureCard('link', t(lang, 'landing.feature5.title'), t(lang, 'landing.feature5.body'))}
+${featureCard('chart', t(lang, 'landing.feature6.title'), t(lang, 'landing.feature6.body'), proTag)}
 </ul>
 </div>
 </section>
@@ -107,68 +111,70 @@ ${featureCard('chart', 'Full view analytics', 'See every open with its timestamp
 <section class="section" id="pricing">
 <div class="container">
 <div class="section-head">
-<h2 class="section-title">Simple pricing</h2>
-<p class="section-sub">Start free. Upgrade when quotes are flowing.</p>
+<h2 class="section-title">${esc(t(lang, 'landing.pricing.title'))}</h2>
+<p class="section-sub">${esc(t(lang, 'landing.pricing.sub'))}</p>
 </div>
 <div class="pricing">
 <article class="price-card">
-<h3 class="price-name">Free</h3>
-<p class="price-amount"><span class="price-value">$0</span><span class="price-period">/month</span></p>
-<p class="price-desc">For trying QuoteMint on real work.</p>
+<h3 class="price-name">${esc(t(lang, 'landing.pricing.free.name'))}</h3>
+<p class="price-amount"><span class="price-value">$0</span><span class="price-period">${period}</span></p>
+<p class="price-desc">${esc(t(lang, 'landing.pricing.free.desc'))}</p>
 <ul class="check-list">
-${checkItem('3 quotes per month')}
-${checkItem('Shareable quote links')}
-${checkItem('E-sign acceptance with timestamp')}
-${checkItem('View counts on your dashboard')}
-${checkItem('QuoteMint badge on public quotes')}
+${checkItem(t(lang, 'landing.pricing.check.3quotes'))}
+${checkItem(t(lang, 'landing.pricing.check.links'))}
+${checkItem(t(lang, 'landing.pricing.check.esign'))}
+${checkItem(t(lang, 'landing.pricing.check.views'))}
+${checkItem(t(lang, 'landing.pricing.check.badge'))}
 </ul>
-<a class="btn btn-secondary btn-block" href="/signup">Start free</a>
+<a class="btn btn-secondary btn-block" href="/signup">${esc(t(lang, 'landing.pricing.free.cta'))}</a>
 </article>
 <article class="price-card price-card-featured">
-<p class="price-badge">Recommended for freelancers who quote weekly</p>
-<h3 class="price-name">Pro</h3>
-<p class="price-amount"><span class="price-value">$9</span><span class="price-period">/month</span></p>
-<p class="price-desc">For freelancers who quote weekly.</p>
+<p class="price-badge">${esc(t(lang, 'landing.pricing.pro.badge'))}</p>
+<h3 class="price-name">${esc(t(lang, 'landing.pricing.pro.name'))}</h3>
+<p class="price-amount"><span class="price-value">$9</span><span class="price-period">${period}</span></p>
+<p class="price-desc">${esc(t(lang, 'landing.pricing.pro.desc'))}</p>
 <ul class="check-list check-list-strong">
-${checkItem('Unlimited quotes')}
-${checkItem('Full view analytics with timestamps')}
-${checkItem('Custom branding: company, wordmark, color')}
-${checkItem('No QuoteMint badge')}
-${checkItem('Everything in Free')}
+${checkItem(t(lang, 'landing.pricing.check.unlimited'))}
+${checkItem(t(lang, 'landing.pricing.check.analytics'))}
+${checkItem(t(lang, 'landing.pricing.check.branding'))}
+${checkItem(t(lang, 'landing.pricing.check.nobadge'))}
+${checkItem(t(lang, 'landing.pricing.check.everything'))}
 </ul>
-<a class="btn btn-primary btn-block" href="/signup">Start free</a>
-<p class="price-alt">or $90/year — two months free</p>
+<a class="btn btn-primary btn-block" href="/signup">${esc(t(lang, 'landing.pricing.pro.cta'))}</a>
+<p class="price-alt">${t(lang, 'landing.pricing.pro.alt')}</p>
 </article>
 </div>
-<p class="pricing-note">Prices in USD. Cancel anytime.</p>
+<p class="pricing-note">${esc(t(lang, 'landing.pricing.note'))}</p>
 </div>
 </section>
 
 <section class="section section-soft" id="faq">
 <div class="container container-narrow">
 <div class="section-head">
-<h2 class="section-title">Questions, answered</h2>
+<h2 class="section-title">${esc(t(lang, 'landing.faq.title'))}</h2>
 </div>
 <div class="faq">
-${faqItem('How do clients accept a quote?', 'They open the link, review the line items, and click Accept. They type their full name and agree to your terms — that acceptance is recorded with a timestamp and shown as a stamp on the quote. Clients can also decline — you\'ll see that instantly too.', true)}
-${faqItem('Do my clients need an account?', 'No. The quote link opens in any browser. Your client can review and accept without installing anything or creating a login.')}
-${faqItem('What happens when I hit the free limit?', 'Quotes you already sent stay live and your data stays intact. You just cannot create new quotes until the month resets or you upgrade to Pro for unlimited quotes.')}
-${faqItem('Can I put my own branding on quotes?', 'Yes, on the Pro plan. Set your company name, a wordmark, and your brand color, and every quote page picks them up. The QuoteMint badge is also removed.')}
-${faqItem('Do quote links expire?', 'No. You can add a valid-until date as helpful context for your client, but the link itself keeps working.')}
-${faqItem('Can I export a quote as PDF?', 'Yes. Open the quote and use your browser\'s Print dialog and choose Save as PDF — the layout is designed for clean A4 printing.')}
+${faqItem(t(lang, 'landing.faq.q1'), t(lang, 'landing.faq.a1'), true)}
+${faqItem(t(lang, 'landing.faq.q2'), t(lang, 'landing.faq.a2'))}
+${faqItem(t(lang, 'landing.faq.q3'), t(lang, 'landing.faq.a3'))}
+${faqItem(t(lang, 'landing.faq.q4'), t(lang, 'landing.faq.a4'))}
+${faqItem(t(lang, 'landing.faq.q5'), t(lang, 'landing.faq.a5'))}
+${faqItem(t(lang, 'landing.faq.q6'), t(lang, 'landing.faq.a6'))}
 </div>
 </div>
 </section>
 
 <section class="cta-band">
 <div class="container cta-band-inner">
-<h2 class="cta-title">Send your next quote. Know the moment it&rsquo;s opened.</h2>
-<p class="cta-sub">It takes about a minute.</p>
-<a class="btn btn-primary btn-lg" href="/signup">Start free</a>
+<h2 class="cta-title">${t(lang, 'landing.cta.title')}</h2>
+<p class="cta-sub">${esc(t(lang, 'landing.cta.sub'))}</p>
+<a class="btn btn-primary btn-lg" href="/signup">${esc(t(lang, 'landing.cta.button'))}</a>
 </div>
 </section>`;
 
   return layout({
+    lang,
+    path,
     title,
     description,
     body,
