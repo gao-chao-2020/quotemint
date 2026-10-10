@@ -8,7 +8,7 @@ import {
   renderError
 } from '../templates/index.js';
 import { quotaFor } from '../lib/gating.js';
-import { fetchQuoteByToken, listQuoteRows, markViewed, quoteRowToFull } from '../lib/quotes.js';
+import { fetchQuoteByToken, listEvents, listQuoteRows, markViewed, quoteRowToFull } from '../lib/quotes.js';
 import { isConfigured, isDemoMode } from '../lib/stripe.js';
 
 function sendHtml(res, status, html) {
@@ -50,7 +50,7 @@ export function newQuotePage(req, res, ctx) {
     redirect(res, '/login');
     return;
   }
-  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: null, quota: quotaFor(ctx.db, ctx.user) }));
+  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: null, events: null, quota: quotaFor(ctx.db, ctx.user) }));
 }
 
 export function editQuotePage(req, res, ctx, params) {
@@ -67,7 +67,8 @@ export function editQuotePage(req, res, ctx, params) {
     return;
   }
   const { quote, totals } = quoteRowToFull(row);
-  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: { ...quote, totals }, quota: quotaFor(ctx.db, ctx.user) }));
+  const events = ctx.user.plan === 'pro' ? listEvents(ctx.db, id) : null;
+  sendHtml(res, 200, renderEditor({ user: ctx.user, quote: { ...quote, totals }, events, quota: quotaFor(ctx.db, ctx.user) }));
 }
 
 export function billingPage(req, res, ctx) {

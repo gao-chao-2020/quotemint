@@ -1,7 +1,7 @@
 // Quote editor (GET /app/quotes/new, GET /app/quotes/:id/edit). Live totals mirror
 // the §2 money math in integer cents; non-draft quotes render read-only.
 
-import { bootScript, computeTotals, esc, formatDate, formatMoney, icon, layout, statusPill } from './layout.js';
+import { bootScript, computeTotals, esc, formatDate, formatDateTime, formatMoney, icon, layout, statusPill } from './layout.js';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CNY'];
 
@@ -42,7 +42,40 @@ function readOnlyBanner(quote) {
   return `<div class="banner banner-${esc(status)}" role="status">${icon('alert', 18)}<div><strong>${esc(text)}</strong><p>Create a new quote if you need to send updated numbers.</p></div></div>`;
 }
 
-export function renderEditor({ user, quote = null, quota = null } = {}) {
+const ACTIVITY_LABELS = { sent: 'Sent', view: 'Viewed', accept: 'Accepted', decline: 'Declined' };
+const ACTIVITY_ICONS = { sent: 'send', view: 'eye', accept: 'check-circle', decline: 'x' };
+
+function activityItem(event) {
+  const type = String(event?.type || '');
+  const reason = type === 'decline' && event?.meta
+    ? `<p class="activity-reason">${esc(event.meta)}</p>`
+    : '';
+  return `<li class="activity-item">
+<span class="activity-mark activity-mark-${esc(type)}">${icon(ACTIVITY_ICONS[type] || 'eye', 15)}</span>
+<div>
+<p class="activity-label">${esc(ACTIVITY_LABELS[type] || type)}<span class="activity-time">${esc(formatDateTime(event?.at))}</span></p>
+${reason}
+</div>
+</li>`;
+}
+
+function activityPanel(events) {
+  if (Array.isArray(events)) {
+    const body = events.length > 0
+      ? `<ol class="activity-list">${[...events].reverse().map(activityItem).join('')}</ol>`
+      : `<p class="side-text">No activity yet — send this quote to start tracking opens and acceptance.</p>`;
+    return `<div class="panel side-panel" aria-label="Activity">
+<h2 class="side-title">${icon('chart', 17)} Activity</h2>
+${body}
+</div>`;
+  }
+  return `<div class="panel side-panel" aria-label="Activity">
+<h2 class="side-title">${icon('chart', 17)} Activity</h2>
+<p class="side-text"><a href="/app/billing">Upgrade to Pro</a> to see every open with its timestamp.</p>
+</div>`;
+}
+
+export function renderEditor({ user, quote = null, quota = null, events = null } = {}) {
   const editable = !quote || quote.status === 'draft';
   const currency = esc(quote?.currency || 'USD');
   const items = defaultItems(quote);
@@ -222,6 +255,7 @@ ${linkPanel}
 ${statusMeta}
 <p class="side-text">${isNew ? 'This quote is not saved yet.' : editable ? 'Drafts can be edited and deleted. Sending locks it.' : 'Locked quotes cannot be edited or deleted.'}</p>
 </div>
+${quote ? activityPanel(events) : ''}
 </aside>
 </div>
 </div>

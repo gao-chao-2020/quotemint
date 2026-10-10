@@ -3,8 +3,8 @@ import { quotaFor } from '../lib/gating.js';
 import {
   fetchQuoteWithViews,
   insertQuote,
+  listEvents,
   listQuoteRows,
-  quoteEvents,
   quoteRowToFull,
   QuoteError,
   sendQuote,
@@ -78,7 +78,7 @@ export function getQuote(req, res, ctx, params) {
     return;
   }
   const { quote, totals } = quoteRowToFull(row);
-  const events = ctx.user.plan === 'pro' ? quoteEvents(ctx.db, id) : null;
+  const events = ctx.user.plan === 'pro' ? listEvents(ctx.db, id) : null;
   sendJson(res, 200, { ok: true, data: { quote: { ...quote, totals }, totals, events } });
 }
 

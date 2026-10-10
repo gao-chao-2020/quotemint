@@ -4,7 +4,6 @@ data-test/
 data-smoke/
 tmp-*
 .env
-artifacts/
 .claude/
 *.log
 .DS_Store

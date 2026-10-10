@@ -57,6 +57,33 @@ test('timestamp older than 300s -> 400 even with a valid HMAC (§10)', async () 
   assert.equal(user.plan, 'free');
 });
 
+test('unpaid or non-subscription checkout sessions are acknowledged but do not upgrade', async () => {
+  const cases = [
+    { id: 'evt_unpaid', mode: 'subscription', payment_status: 'unpaid' },
+    { id: 'evt_onetime', mode: 'payment', payment_status: 'paid' }
+  ];
+  for (const c of cases) {
+    const raw = JSON.stringify({
+      id: c.id,
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: `cs_${c.id}`,
+          mode: c.mode,
+          payment_status: c.payment_status,
+          metadata: { user_id: String(userOne.user.id) }
+        }
+      }
+    });
+    const res = await postWebhook(server, raw);
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body, { received: true });
+  }
+
+  const { user } = assertOk(await api(server, 'GET', '/api/auth/me', { cookie: userOne.cookie }));
+  assert.equal(user.plan, 'free', 'only paid subscription checkouts may upgrade');
+});
+
 test('checkout.session.completed with valid signature upgrades user via metadata.user_id', async () => {
   const raw = JSON.stringify({
     id: 'evt_checkout_1',

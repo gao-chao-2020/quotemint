@@ -84,13 +84,16 @@ export function renderDashboard({ user, quotes = [], quota = null } = {}) {
   const rate = engaged.length > 0 ? accepted / engaged.length : null;
   const pipelineQuotes = list.filter((q) => q.status === 'sent' || q.status === 'viewed');
   const pipelineTotal = pipelineQuotes.reduce((sum, q) => sum + (Number(q.total_cents) || 0), 0);
-  const currencies = new Set(list.map((q) => q.currency).filter(Boolean));
-  const pipelineCurrency = currencies.size === 1 ? [...currencies][0] : 'USD';
+  const pipelineCurrencies = new Set(pipelineQuotes.map((q) => q.currency).filter(Boolean));
+  const pipelineMixed = pipelineCurrencies.size > 1;
+  const pipelineValue = pipelineMixed
+    ? 'Multi-currency'
+    : formatMoney(pipelineTotal, [...pipelineCurrencies][0] || 'USD');
 
   const stats = `<div class="stats">
 ${statCard('Total quotes', String(list.length), list.length === 1 ? '1 quote created' : `${list.length} quotes created`, 'file')}
 ${statCard('Acceptance rate', rate === null ? '—' : formatRate(rate), engaged.length === 0 ? 'No sent quotes yet' : `Across ${engaged.length} sent ${engaged.length === 1 ? 'quote' : 'quotes'}`, 'check-circle')}
-${statCard('Pipeline value', formatMoney(pipelineTotal, pipelineCurrency), pipelineQuotes.length === 0 ? 'Nothing pending' : `${pipelineQuotes.length} ${pipelineQuotes.length === 1 ? 'quote' : 'quotes'} awaiting a response`, 'dollar')}
+${statCard('Pipeline value', pipelineValue, pipelineQuotes.length === 0 ? 'Nothing pending' : `${pipelineQuotes.length} ${pipelineQuotes.length === 1 ? 'quote' : 'quotes'} awaiting a response`, 'dollar')}
 ${usageCard(quota)}
 </div>`;
 

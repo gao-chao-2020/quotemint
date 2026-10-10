@@ -65,7 +65,11 @@ Scope: launch plan for a brand-new, zero-traffic, bootstrapped product. All targ
 >
 > It is early. If anything feels rough, tell me in the comments and I will fix it today. Thank you.
 
-- **Launch assets to prepare:** 3 gallery images (quote editor, client view with signature, analytics), 1 demo GIF (create → send → "viewed" → accepted), 1 short screen-recording. No vanity metrics claims in any asset.
+- **Gallery images (selected from QA's e2e screenshots in artifacts/ — real UI, fixture data):**
+  1. `artifacts/editor.png` — "Create a quote: line items, quantities, and totals update as you type." (70 chars)
+  2. `artifacts/public-quote-accepted.png` — "Client view: accepted online with a typed name and a timestamp." (63 chars)
+  3. `artifacts/dashboard-accepted.png` — "Owner view: quote statuses, acceptance rate, and plan usage at a glance." (72 chars)
+- **Demo GIF:** record later from the same flow (create → send → viewed → accepted); use these three screens as the storyboard. No vanity metrics claims in any asset.
 - **Timing:** Tuesday–Thursday, 12:01am PT posting; maker present all day replying.
 
 ### 3.2 Reddit — 6 subreddits and their self-promo posture

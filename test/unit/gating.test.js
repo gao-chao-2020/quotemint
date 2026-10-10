@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openDb } from '../../src/lib/db.js';
 import { canCreateQuote, countQuotesThisMonth, monthBoundsUtc, quotaFor, FREE_MONTHLY_QUOTES } from '../../src/lib/gating.js';
-import { insertQuote, QuoteError, sendQuote, updateQuoteRow } from '../../src/lib/quotes.js';
+import { insertQuote, listEvents, markViewed, QuoteError, sendQuote, updateQuoteRow } from '../../src/lib/quotes.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'qm-gating-'));
 const db = openDb(dir);
@@ -109,4 +109,38 @@ test('updateQuoteRow edits drafts only (race guard)', () => {
   const other = makeUser('guard2@test.dev', 'pro');
   const othersDraft = insertQuote(db, other, QUOTE_DATA);
   assert.equal(updateQuoteRow(db, othersDraft.id, user.id, QUOTE_DATA), null);
+});
+
+test('markViewed records one view event and dedupes rapid repeats', () => {
+  const user = makeUser('views@test.dev', 'pro');
+  const quote = sendQuote(db, insertQuote(db, user, QUOTE_DATA));
+  const first = markViewed(db, quote);
+  assert.equal(first.status, 'viewed');
+  assert.ok(first.viewed_at);
+  markViewed(db, first);
+  markViewed(db, first);
+  const views = listEvents(db, quote.id).filter((e) => e.type === 'view');
+  assert.equal(views.length, 1);
+});
+
+test('markViewed appends a new event when the last view is older than 60s', () => {
+  const user = makeUser('views-old@test.dev', 'pro');
+  const quote = sendQuote(db, insertQuote(db, user, QUOTE_DATA));
+  const first = markViewed(db, quote);
+  db.prepare(`UPDATE quote_events SET at = ? WHERE quote_id = ? AND type = 'view'`).run(
+    new Date(Date.now() - 61000).toISOString(),
+    quote.id
+  );
+  const second = markViewed(db, first);
+  assert.equal(second.status, 'viewed');
+  assert.equal(listEvents(db, quote.id).filter((e) => e.type === 'view').length, 2);
+});
+
+test('markViewed ignores draft quotes entirely', () => {
+  const user = makeUser('views-draft@test.dev', 'pro');
+  const draft = insertQuote(db, user, QUOTE_DATA);
+  const after = markViewed(db, draft);
+  assert.equal(after.status, 'draft');
+  assert.equal(after.viewed_at, null);
+  assert.equal(listEvents(db, draft.id).length, 0);
 });

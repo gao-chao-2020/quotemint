@@ -166,7 +166,7 @@ export function fetchQuoteByToken(db, token) {
   return db.prepare('SELECT * FROM quotes WHERE public_token = ?').get(token);
 }
 
-export function quoteEvents(db, quoteId) {
+export function listEvents(db, quoteId) {
   return db
     .prepare('SELECT type, at, meta FROM quote_events WHERE quote_id = ? ORDER BY id ASC')
     .all(quoteId);
@@ -250,11 +250,19 @@ export function sendQuote(db, row) {
 }
 
 export function markViewed(db, row) {
-  if (row.status !== 'sent') return row;
-  const now = new Date().toISOString();
-  db.prepare('UPDATE quotes SET status = ?, viewed_at = ?, updated_at = ? WHERE id = ?').run('viewed', now, now, row.id);
-  recordEvent(db, row.id, 'view');
-  return db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+  if (row.status === 'draft') return row;
+  let current = row;
+  if (row.status === 'sent') {
+    const now = new Date().toISOString();
+    db.prepare('UPDATE quotes SET status = ?, viewed_at = ?, updated_at = ? WHERE id = ?').run('viewed', now, now, row.id);
+    current = db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+  }
+  const lastView = db
+    .prepare(`SELECT at FROM quote_events WHERE quote_id = ? AND type = 'view' ORDER BY id DESC LIMIT 1`)
+    .get(row.id);
+  // Collapse refresh spam: at most one view event per minute.
+  if (!lastView || Date.now() - Date.parse(lastView.at) >= 60 * 1000) recordEvent(db, row.id, 'view');
+  return current;
 }
 
 export function acceptQuote(db, row, name) {

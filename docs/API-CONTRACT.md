@@ -114,7 +114,7 @@ In-memory sliding window per IP (fine for single process):
 - `POST /api/auth/signup`, `POST /api/auth/login`: 20 req / 15 min / IP
 - `POST /api/public/quotes/:token/accept`, `.../decline`: 30 req / 15 min / IP
 
-Exceeded → `429 {code:'rate_limited'}`. Client IP: first `x-forwarded-for` entry, else socket address.
+Exceeded → `429 {code:'rate_limited'}`. Client IP: first `x-forwarded-for` entry **only when `TRUST_PROXY=1`** (set behind a reverse proxy you control); otherwise the socket address. Untrusted XFF must never mint fresh rate-limit keys.
 
 ## 5. CSRF & Origin Check
 
@@ -268,3 +268,4 @@ These refine ambiguities; the frozen sections above otherwise stand as written:
 2. `accept`/`decline` on a `draft` quote → `404 not_found` (only `sent|viewed` are actionable states on the public API; drafts are not exposed as acceptable).
 3. Webhook success body is the literal `{"received":true}` per §10, not the `ok`/`data` envelope.
 4. `customer.subscription.deleted` also clears `plan_renews_at` (sets it to NULL) in addition to downgrading to `free`.
+5. View analytics (product decision, 2026-10-10): a `view` event is recorded on **every** public quote-page GET when status is not `draft`, deduped to at most one event per 60 seconds per quote (refresh-spam guard). The status upgrade `sent → viewed` still happens only on the first view. The editor page receives `events` (Pro: `listEvents` array; Free: `null`) and renders the Activity panel.
