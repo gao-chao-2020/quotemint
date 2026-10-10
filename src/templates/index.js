@@ -1,14 +1,9 @@
-// PLACEHOLDER barrel - owned by frontend, will be replaced.
-// Backend routes import ONLY from this file.
+// Barrel: backend routes import page renderers from this file only (contract §12).
 
-import { layout } from './layout.js';
-
-const stub = (name) => layout({ title: `QuoteMint - ${name}`, body: `<main><h1>${name}</h1><p>Placeholder template.</p></main>` });
-
-export const renderLanding = () => stub('Landing');
-export const renderAuth = () => stub('Auth');
-export const renderDashboard = () => stub('Dashboard');
-export const renderEditor = () => stub('Editor');
-export const renderBilling = () => stub('Billing');
-export const renderPublicQuote = () => stub('Quote');
-export const renderError = () => stub('Error');
+export { renderLanding } from './landing.js';
+export { renderAuth } from './auth.js';
+export { renderDashboard } from './dashboard.js';
+export { renderEditor } from './editor.js';
+export { renderBilling } from './billing.js';
+export { renderPublicQuote } from './publicquote.js';
+export { renderError } from './error.js';
