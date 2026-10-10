@@ -12,7 +12,7 @@ import { fetchQuoteByToken, listQuoteRows, markViewed, quoteRowToFull } from '..
 import { isConfigured, isDemoMode } from '../lib/stripe.js';
 
 function sendHtml(res, status, html) {
-  res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(html);
 }
 
@@ -40,7 +40,7 @@ export function dashboardPage(req, res, ctx) {
   }
   const quotes = listQuoteRows(ctx.db, ctx.user.id).map((row) => {
     const { quote, totals } = quoteRowToFull(row);
-    return { ...quote, totals, views: row.views };
+    return { ...quote, total_cents: totals.total_cents, totals, views: row.views };
   });
   sendHtml(res, 200, renderDashboard({ user: ctx.user, quotes, quota: quotaFor(ctx.db, ctx.user) }));
 }

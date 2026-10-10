@@ -2,7 +2,7 @@ const BODY_LIMIT_BYTES = 1024 * 1024;
 
 export function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(body);
 }
 
@@ -65,7 +65,14 @@ export function parseCookies(req) {
     if (idx === -1) continue;
     const name = part.slice(0, idx).trim();
     if (!name) continue;
-    jar[name] = decodeURIComponent(part.slice(idx + 1).trim());
+    const raw = part.slice(idx + 1).trim();
+    let value = raw;
+    try {
+      value = decodeURIComponent(raw);
+    } catch {
+      // Malformed percent-encoding: fall back to the raw value instead of rejecting the request.
+    }
+    jar[name] = value;
   }
   return jar;
 }
@@ -80,10 +87,13 @@ export function clearSessionCookie(res) {
 }
 
 export function clientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
-    const first = forwarded.split(',')[0].trim();
-    if (first) return first;
+  // XFF is client-forgeable; only honor it behind a trusted reverse proxy.
+  if (process.env.TRUST_PROXY === '1') {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string' && forwarded.length > 0) {
+      const first = forwarded.split(',')[0].trim();
+      if (first) return first;
+    }
   }
   return req.socket?.remoteAddress || 'unknown';
 }

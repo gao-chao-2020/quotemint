@@ -53,21 +53,21 @@ function faqItem(question, answer, open = false) {
 }
 
 export function renderLanding() {
-  const title = 'QuoteMint — quotes that get accepted, faster';
-  const description = 'Turn your freelance quotes into polished links clients can view and accept with a click. Track opens, collect e-sign acceptance, and win work faster. Free for 3 quotes a month.';
+  const title = 'QuoteMint — Send a quote. Know the moment it\'s opened.';
+  const description = 'Send a quote as a link, see when your client opens it, and get it accepted online with their typed name. Free for 3 quotes a month; Pro $9/month.';
 
   const body = `
 <section class="hero">
 <div class="container hero-grid">
 <div class="hero-copy">
 <p class="eyebrow">Quote-to-cash for freelancers</p>
-<h1 class="hero-title">Quotes that get accepted, <span class="accent">faster.</span></h1>
-<p class="hero-sub">QuoteMint turns your quote into a polished link your client can view and accept with one click. Know the moment it is opened, collect a name-signed acceptance, and stop chasing &ldquo;did you get my email?&rdquo;</p>
+<h1 class="hero-title">Send a quote. <span class="accent">Know the moment it&rsquo;s opened.</span></h1>
+<p class="hero-sub">QuoteMint turns your quote into a polished link your client can view and accept in seconds. Collect acceptance signed with their name (typed name + timestamp) — and stop chasing &ldquo;did you get my email?&rdquo;</p>
 <div class="hero-actions">
-<a class="btn btn-primary btn-lg" href="/signup">Start free — 3 quotes a month</a>
+<a class="btn btn-primary btn-lg" href="/signup">Start free</a>
 <a class="btn btn-secondary btn-lg" href="#how">See how it works</a>
 </div>
-<p class="hero-note">Free plan included · Pro from $9/mo · No credit card required</p>
+<p class="hero-note">Free plan — 3 quotes a month · Pro $9/mo · No credit card required</p>
 </div>
 ${heroMock()}
 </div>
@@ -94,8 +94,8 @@ ${stepCard('3', 'Get a yes', 'check-circle', 'Your client reviews and accepts wi
 <p class="section-sub">Built for the quiet admin work that wins freelance deals.</p>
 </div>
 <ul class="features">
-${featureCard('eye', 'Open tracking', 'Know the exact moment your quote is viewed, and follow up at the right time instead of guessing.')}
-${featureCard('pen', 'One-click acceptance', 'Clients accept with their full name and a timestamped e-signature record. No printing, no scanning.')}
+${featureCard('eye', 'Open tracking', 'See when your quote is opened — follow up at the right moment instead of guessing.')}
+${featureCard('pen', 'Online acceptance', 'Clients accept with their full name and a timestamped e-signature record. No printing, no scanning.')}
 ${featureCard('printer', 'Print-perfect PDFs', 'Every quote is laid out for clean A4 printing. Save as PDF straight from the browser.')}
 ${featureCard('palette', 'Your brand on every quote', 'Your company name, wordmark, and brand color on every page you send.', 'Pro')}
 ${featureCard('link', 'Links that never expire', 'Share a quote link anytime — it always shows the latest state: pending, accepted, or declined.')}
@@ -125,10 +125,10 @@ ${checkItem('QuoteMint badge on public quotes')}
 <a class="btn btn-secondary btn-block" href="/signup">Start free</a>
 </article>
 <article class="price-card price-card-featured">
-<p class="price-badge">Most popular with working freelancers</p>
+<p class="price-badge">Recommended for freelancers who quote weekly</p>
 <h3 class="price-name">Pro</h3>
 <p class="price-amount"><span class="price-value">$9</span><span class="price-period">/month</span></p>
-<p class="price-desc">For freelancers who quote every week.</p>
+<p class="price-desc">For freelancers who quote weekly.</p>
 <ul class="check-list check-list-strong">
 ${checkItem('Unlimited quotes')}
 ${checkItem('Full view analytics with timestamps')}
@@ -136,7 +136,7 @@ ${checkItem('Custom branding: company, wordmark, color')}
 ${checkItem('No QuoteMint badge')}
 ${checkItem('Everything in Free')}
 </ul>
-<a class="btn btn-primary btn-block" href="/signup">Get started</a>
+<a class="btn btn-primary btn-block" href="/signup">Start free</a>
 <p class="price-alt">or $90/year — two months free</p>
 </article>
 </div>
@@ -150,7 +150,7 @@ ${checkItem('Everything in Free')}
 <h2 class="section-title">Questions, answered</h2>
 </div>
 <div class="faq">
-${faqItem('How do clients accept a quote?', 'They open the link, review the line items, and click Accept. They type their full name and agree to your terms — that acceptance is recorded with a timestamp and shown as a stamp on the quote.', true)}
+${faqItem('How do clients accept a quote?', 'They open the link, review the line items, and click Accept. They type their full name and agree to your terms — that acceptance is recorded with a timestamp and shown as a stamp on the quote. Clients can also decline — you\'ll see that instantly too.', true)}
 ${faqItem('Do my clients need an account?', 'No. The quote link opens in any browser. Your client can review and accept without installing anything or creating a login.')}
 ${faqItem('What happens when I hit the free limit?', 'Quotes you already sent stay live and your data stays intact. You just cannot create new quotes until the month resets or you upgrade to Pro for unlimited quotes.')}
 ${faqItem('Can I put my own branding on quotes?', 'Yes, on the Pro plan. Set your company name, a wordmark, and your brand color, and every quote page picks them up. The QuoteMint badge is also removed.')}
@@ -162,9 +162,9 @@ ${faqItem('Can I export a quote as PDF?', 'Yes. Open the quote and use your brow
 
 <section class="cta-band">
 <div class="container cta-band-inner">
-<h2 class="cta-title">Send your next quote with QuoteMint</h2>
-<p class="cta-sub">It takes about a minute — and your client will thank you for it.</p>
-<a class="btn btn-primary btn-lg" href="/signup">Get started free</a>
+<h2 class="cta-title">Send your next quote. Know the moment it&rsquo;s opened.</h2>
+<p class="cta-sub">It takes about a minute.</p>
+<a class="btn btn-primary btn-lg" href="/signup">Start free</a>
 </div>
 </section>`;
 

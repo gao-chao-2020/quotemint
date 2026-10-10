@@ -78,7 +78,16 @@ test('handleWebhookEvent upgrades user on checkout.session.completed', () => {
   );
   const event = {
     type: 'checkout.session.completed',
-    data: { object: { metadata: { user_id: '1' }, client_reference_id: '1', customer: 'cus_123', subscription: 'sub_123' } }
+    data: {
+      object: {
+        mode: 'subscription',
+        payment_status: 'paid',
+        metadata: { user_id: '1' },
+        client_reference_id: '1',
+        customer: 'cus_123',
+        subscription: 'sub_123'
+      }
+    }
   };
   assert.deepEqual(handleWebhookEvent(db, event), { handled: true });
   const user = db.prepare('SELECT * FROM users WHERE id = 1').get();
@@ -91,13 +100,47 @@ test('handleWebhookEvent upgrades user on checkout.session.completed', () => {
 test('handleWebhookEvent falls back to client_reference_id and ignores unknown users', () => {
   const fallback = {
     type: 'checkout.session.completed',
-    data: { object: { client_reference_id: '1', customer: 'cus_9', subscription: 'sub_9' } }
+    data: {
+      object: {
+        mode: 'subscription',
+        payment_status: 'paid',
+        client_reference_id: '1',
+        customer: 'cus_9',
+        subscription: 'sub_9'
+      }
+    }
   };
   assert.deepEqual(handleWebhookEvent(db, fallback), { handled: true });
-  const unknown = { type: 'checkout.session.completed', data: { object: { metadata: { user_id: '999' } } } };
+  const unknown = {
+    type: 'checkout.session.completed',
+    data: { object: { mode: 'subscription', payment_status: 'paid', metadata: { user_id: '999' } } }
+  };
   assert.deepEqual(handleWebhookEvent(db, unknown), { handled: false });
   assert.deepEqual(handleWebhookEvent(db, { type: 'invoice.paid', data: { object: {} } }), { handled: false });
   assert.deepEqual(handleWebhookEvent(db, null), { handled: false });
+});
+
+test('handleWebhookEvent ignores non-subscription or unpaid checkout sessions', () => {
+  const base = { metadata: { user_id: '1' }, customer: 'cus_x', subscription: 'sub_x' };
+  const oneTime = {
+    type: 'checkout.session.completed',
+    data: { object: { ...base, mode: 'payment', payment_status: 'paid' } }
+  };
+  assert.deepEqual(handleWebhookEvent(db, oneTime), { handled: false });
+  const unpaid = {
+    type: 'checkout.session.completed',
+    data: { object: { ...base, mode: 'subscription', payment_status: 'unpaid' } }
+  };
+  assert.deepEqual(handleWebhookEvent(db, unpaid), { handled: false });
+  const user = db.prepare('SELECT * FROM users WHERE id = 1').get();
+  assert.equal(user.plan, 'pro');
+  assert.equal(user.stripe_customer_id, 'cus_9');
+  assert.equal(user.stripe_subscription_id, 'sub_9');
+  const noPaymentRequired = {
+    type: 'checkout.session.completed',
+    data: { object: { ...base, customer: 'cus_9', subscription: 'sub_9', mode: 'subscription', payment_status: 'no_payment_required' } }
+  };
+  assert.deepEqual(handleWebhookEvent(db, noPaymentRequired), { handled: true });
 });
 
 test('customer.subscription.deleted downgrades matching user', () => {

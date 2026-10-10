@@ -2,6 +2,11 @@ import { randomBytes } from 'node:crypto';
 import { openDb, resolveDataDir } from '../src/lib/db.js';
 import { hashPassword } from '../src/lib/auth.js';
 
+if (process.env.DEMO_MODE !== 'true' || process.env.NODE_ENV === 'production') {
+  console.log('seed: refusing to run. Demo seeding requires DEMO_MODE=true and NODE_ENV != production.');
+  process.exit(1);
+}
+
 function isoDaysAgo(days, hours = 0) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000).toISOString();
 }

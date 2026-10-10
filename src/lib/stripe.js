@@ -87,6 +87,10 @@ export function handleWebhookEvent(db, event) {
   const object = event.data?.object;
 
   if (type === 'checkout.session.completed' && object) {
+    if (object.mode !== 'subscription') return { handled: false };
+    if (object.payment_status !== 'paid' && object.payment_status !== 'no_payment_required') {
+      return { handled: false };
+    }
     const userIdRaw = object.metadata?.user_id ?? object.client_reference_id;
     const userId = Number(userIdRaw);
     if (!Number.isInteger(userId) || userId <= 0) return { handled: false };

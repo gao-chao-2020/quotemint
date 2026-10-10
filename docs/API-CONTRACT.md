@@ -259,3 +259,12 @@ renderError({status, message})
 | qa | `test/integration/*`, `artifacts/*` |
 | brand | `marketing/*` |
 | lead | `package.json`, `Dockerfile`, `README.md`, `docs/*`, `.env.example`, `.gitignore` |
+
+## 15. Implementation Resolutions (approved by team lead, 2026-10-10)
+
+These refine ambiguities; the frozen sections above otherwise stand as written:
+
+1. `/webhooks/stripe` is exempt from the §5 `X-Requested-With` requirement (Stripe cannot send it; HMAC signature is the authentication for this route). Origin check still applies when an Origin header is present.
+2. `accept`/`decline` on a `draft` quote → `404 not_found` (only `sent|viewed` are actionable states on the public API; drafts are not exposed as acceptable).
+3. Webhook success body is the literal `{"received":true}` per §10, not the `ok`/`data` envelope.
+4. `customer.subscription.deleted` also clears `plan_renews_at` (sets it to NULL) in addition to downgrading to `free`.

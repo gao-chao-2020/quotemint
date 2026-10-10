@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openDb } from '../../src/lib/db.js';
 import { canCreateQuote, countQuotesThisMonth, monthBoundsUtc, quotaFor, FREE_MONTHLY_QUOTES } from '../../src/lib/gating.js';
-import { insertQuote, QuoteError } from '../../src/lib/quotes.js';
+import { insertQuote, QuoteError, sendQuote, updateQuoteRow } from '../../src/lib/quotes.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'qm-gating-'));
 const db = openDb(dir);
@@ -92,4 +92,21 @@ test('pro users are unlimited with max null', () => {
   const quota = quotaFor(db, user);
   assert.equal(quota.used, 5);
   assert.equal(quota.max, null);
+});
+
+test('updateQuoteRow edits drafts only (race guard)', () => {
+  const user = makeUser('guard@test.dev', 'pro');
+  const draft = insertQuote(db, user, QUOTE_DATA);
+  const edited = updateQuoteRow(db, draft.id, user.id, { ...QUOTE_DATA, title: 'Edited title' });
+  assert.ok(edited);
+  assert.equal(edited.title, 'Edited title');
+  assert.equal(edited.status, 'draft');
+  sendQuote(db, edited);
+  assert.equal(updateQuoteRow(db, draft.id, user.id, { ...QUOTE_DATA, title: 'Late edit' }), null);
+  const row = db.prepare('SELECT title, status FROM quotes WHERE id = ?').get(draft.id);
+  assert.equal(row.status, 'sent');
+  assert.equal(row.title, 'Edited title');
+  const other = makeUser('guard2@test.dev', 'pro');
+  const othersDraft = insertQuote(db, other, QUOTE_DATA);
+  assert.equal(updateQuoteRow(db, othersDraft.id, user.id, QUOTE_DATA), null);
 });

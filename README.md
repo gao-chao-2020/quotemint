@@ -24,7 +24,8 @@
 
 ```bash
 cp .env.example .env        # Windows: copy .env.example .env
-npm run seed                # 可选：写入演示数据
+# 本地演示：在 .env 中设 DEMO_MODE=true
+npm run seed                # 可选：写入演示数据（仅本地；生产环境会被脚本拒绝执行）
 npm start                   # http://localhost:3000
 ```
 
@@ -82,9 +83,10 @@ WantedBy=multi-user.target
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `PORT` | `3000` | 监听端口 |
-| `BASE_URL` | `http://localhost:3000` | 对外地址，用于生成客户链接与 Stripe 回调 |
+| `BASE_URL` | `http://localhost:3000` | 对外地址，用于生成客户链接与 Stripe 回调。**生产环境必须设为 https 真实域名**（否则 Cookie 不会带 Secure，启动时会打印警告） |
 | `DATA_DIR` | `./data` | SQLite 数据目录 |
-| `DEMO_MODE` | `false` | `true` 时显示演示升级按钮；生产环境（`NODE_ENV=production`）下强制为 `false`，否则拒绝启动 |
+| `DEMO_MODE` | `false` | `true` 时显示演示升级按钮并允许 seed；生产环境（`NODE_ENV=production`）下强制关闭，否则拒绝启动 |
+| `TRUST_PROXY` | 空 | 反向代理（Caddy/Nginx）后面部署时设为 `1`，限流才会取用 `X-Forwarded-For` 真实客户端 IP |
 | `STRIPE_SECRET_KEY` | — | Stripe 密钥；为空时计费功能自动禁用 |
 | `STRIPE_PRICE_ID` | — | Pro 订阅价格 ID |
 | `STRIPE_WEBHOOK_SECRET` | — | Webhook 签名密钥 |

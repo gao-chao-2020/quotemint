@@ -147,10 +147,10 @@ function userMenu(user) {
 function marketingNav(user) {
   const actions = user
     ? '<a class="btn btn-primary btn-sm" href="/app">Dashboard</a>'
-    : '<a class="btn btn-ghost btn-sm" href="/login">Log in</a><a class="btn btn-primary btn-sm" href="/signup">Get started free</a>';
+    : '<a class="btn btn-ghost btn-sm" href="/login">Log in</a><a class="btn btn-primary btn-sm" href="/signup">Start free</a>';
   const mobileActions = user
     ? '<a class="nav-mobile-link" href="/app">Dashboard</a>'
-    : '<a class="nav-mobile-link" href="/login">Log in</a><a class="nav-mobile-link nav-mobile-cta" href="/signup">Get started free</a>';
+    : '<a class="nav-mobile-link" href="/login">Log in</a><a class="nav-mobile-link nav-mobile-cta" href="/signup">Start free</a>';
   return `<header class="site-header" data-header>
 <nav class="container nav" aria-label="Main">
 <a class="brand" href="/">${logoMark()}<span class="brand-name">QuoteMint</span></a>
@@ -199,7 +199,7 @@ function siteFooter() {
 <div class="container footer-grid">
 <div class="footer-brand">
 <a class="brand" href="/">${logoMark()}<span class="brand-name">QuoteMint</span></a>
-<p class="footer-tagline">Quotes that get accepted, faster. Built for freelancers and studios of one.</p>
+<p class="footer-tagline">Send a quote. Know the moment it&rsquo;s opened. Built for freelancers and studios of one.</p>
 </div>
 <nav class="footer-col" aria-label="Product">
 <h2 class="footer-heading">Product</h2>
@@ -223,14 +223,14 @@ function appFooter() {
   return `<footer class="app-footer">
 <div class="container app-footer-inner">
 <span>© 2026 QuoteMint</span>
-<span class="muted">Quotes that get accepted, faster.</span>
+<span class="muted">Send a quote. Know the moment it&rsquo;s opened.</span>
 </div>
 </footer>`;
 }
 
 export function layout({
-  title = 'QuoteMint — quotes that get accepted, faster',
-  description = 'QuoteMint turns your freelance quotes into shareable links clients can view and accept with a click. Track opens and collect e-sign acceptance.',
+  title = 'QuoteMint — Send a quote. Know the moment it\'s opened.',
+  description = 'Send a quote as a link, see when your client opens it, and get it accepted online with their typed name.',
   body = '',
   nav = 'marketing',
   active = '',

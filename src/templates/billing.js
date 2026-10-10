@@ -40,6 +40,7 @@ ${checkItem('3 quotes per month')}
 ${checkItem('Shareable quote links')}
 ${checkItem('E-sign acceptance with timestamp')}
 ${checkItem('View counts on your dashboard')}
+${checkItem('Powered by QuoteMint badge on public quotes')}
 </ul>
 </article>`;
 
@@ -71,7 +72,7 @@ ${checkItem('No QuoteMint badge on public quotes')}
 ${billingEnabled
       ? `<button type="button" class="btn btn-primary btn-block btn-lg" id="upgrade-btn">Upgrade to Pro</button>`
       : `<button type="button" class="btn btn-primary btn-block btn-lg" id="upgrade-btn" disabled aria-disabled="true">Upgrade to Pro</button>
-<p class="plan-note plan-note-warn">${icon('alert', 15)} Billing is not configured yet (Stripe keys missing).</p>`}
+<p class="plan-note plan-note-warn">${icon('alert', 15)} Upgrades are temporarily unavailable. Try again soon.</p>`}
 ${demoMode ? `<button type="button" class="btn btn-secondary btn-block" id="demo-upgrade-btn">Demo upgrade (dev only)</button>` : ''}
 </article>`;
 

@@ -18,6 +18,11 @@ if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE === 'true') {
 
 const PORT = Number(process.env.PORT || 3000);
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+if (process.env.NODE_ENV === 'production' && BASE_URL.startsWith('http://localhost')) {
+  console.warn(
+    '[warn] NODE_ENV=production but BASE_URL points at localhost. Session cookies will not be Secure and quote links will be unreachable by clients. Set BASE_URL to the public https URL.'
+  );
+}
 const PUBLIC_DIR = resolve(fileURLToPath(new URL('../public', import.meta.url)));
 const db = openDb(resolveDataDir());
 

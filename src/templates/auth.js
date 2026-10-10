@@ -15,7 +15,7 @@ export function renderAuth({ mode = 'login' } = {}) {
 <input id="auth-name" name="name" type="text" autocomplete="name" maxlength="80" required>
 </div>
 <div class="field">
-<label for="auth-email">Work email</label>
+<label for="auth-email">Email</label>
 <input id="auth-email" name="email" type="email" autocomplete="email" maxlength="254" required>
 </div>
 <div class="field">

@@ -209,11 +209,12 @@ export function insertQuote(db, user, data) {
   }
 }
 
-export function updateQuoteRow(db, quoteId, data) {
+export function updateQuoteRow(db, quoteId, userId, data) {
   const now = new Date().toISOString();
-  db.prepare(
+  const info = db.prepare(
     `UPDATE quotes SET title = ?, client_name = ?, client_email = ?, currency = ?, items = ?,
-     discount_pct = ?, tax_pct = ?, notes = ?, terms = ?, valid_until = ?, updated_at = ? WHERE id = ?`
+     discount_pct = ?, tax_pct = ?, notes = ?, terms = ?, valid_until = ?, updated_at = ?
+     WHERE id = ? AND user_id = ? AND status = 'draft'`
   ).run(
     data.title,
     data.client_name,
@@ -226,8 +227,10 @@ export function updateQuoteRow(db, quoteId, data) {
     data.terms,
     data.valid_until,
     now,
-    quoteId
+    quoteId,
+    userId
   );
+  if (info.changes === 0) return null;
   return db.prepare('SELECT * FROM quotes WHERE id = ?').get(quoteId);
 }
 
@@ -284,8 +287,4 @@ export function declineQuote(db, row, reason = '') {
   db.prepare('UPDATE quotes SET status = ?, declined_at = ?, updated_at = ? WHERE id = ?').run('declined', now, now, row.id);
   recordEvent(db, row.id, 'decline', reason);
   return db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
-}
-
-export function parsePublicToken(token) {
-  return typeof token === 'string' && /^[0-9a-f]{32}$/.test(token) ? token : null;
 }

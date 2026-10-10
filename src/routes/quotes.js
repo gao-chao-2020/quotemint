@@ -97,7 +97,11 @@ export async function updateQuote(req, res, ctx, params) {
   const body = await readJson(req);
   await handleQuoteError(res, () => {
     const data = validateQuoteBody(body);
-    const updated = updateQuoteRow(ctx.db, id, data);
+    const updated = updateQuoteRow(ctx.db, id, ctx.user.id, data);
+    if (!updated) {
+      sendError(res, 409, 'not_draft', 'Only draft quotes can be edited');
+      return;
+    }
     const { quote, totals } = quoteRowToFull(updated);
     sendJson(res, 200, { ok: true, data: { quote: { ...quote, totals } } });
   });

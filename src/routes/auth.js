@@ -6,6 +6,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
 
+const DUMMY_PASSWORD_HASH = hashPassword('quotemint-dummy-timing-equalizer');
+
 function normalizeEmail(value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
@@ -64,7 +66,10 @@ export async function login(req, res, ctx) {
   const email = normalizeEmail(body.email);
   const user = email ? ctx.db.prepare('SELECT * FROM users WHERE email = ?').get(email) : null;
   const password = typeof body.password === 'string' ? body.password : '';
-  const valid = user && password ? verifyPassword(password, user.password_hash) : false;
+  // Unknown email still burns one scrypt verify so login timing does not enumerate accounts.
+  const valid = user
+    ? verifyPassword(password, user.password_hash)
+    : (verifyPassword(password, DUMMY_PASSWORD_HASH), false);
   if (!valid) {
     sendError(res, 401, 'invalid_credentials', 'Incorrect email or password');
     return;

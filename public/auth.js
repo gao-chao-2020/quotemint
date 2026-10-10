@@ -55,10 +55,10 @@ function validate(mode, data) {
       clearError();
 
       const data = {
-        email: String($('#email', form)?.value || '').trim(),
-        password: String($('#password', form)?.value || ''),
+        email: String($('#auth-email', form)?.value || '').trim(),
+        password: String($('#auth-password', form)?.value || ''),
       };
-      if (mode === 'signup') data.name = String($('#name', form)?.value || '').trim();
+      if (mode === 'signup') data.name = String($('#auth-name', form)?.value || '').trim();
 
       const problem = validate(mode, data);
       if (problem) {

@@ -27,7 +27,7 @@ export async function demoUpgrade(req, res, ctx) {
     sendError(res, 401, 'not_authenticated', 'Log in to continue');
     return;
   }
-  if (!isDemoMode()) {
+  if (!isDemoMode() || process.env.NODE_ENV === 'production') {
     sendError(res, 403, 'demo_disabled', 'Demo upgrades are disabled');
     return;
   }
