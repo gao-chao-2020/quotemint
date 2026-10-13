@@ -1,0 +1,31 @@
+# Render Blueprint for QuoteMint (free tier): web service + external Neon Postgres.
+# Secrets (BASE_URL, DATABASE_URL, provider keys) are set in the Render dashboard (sync: false).
+services:
+  - type: web
+    name: quotemint
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "false"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CREEM_API_KEY
+        sync: false
+      - key: CREEM_PRODUCT_ID
+        sync: false
+      - key: CREEM_WEBHOOK_SECRET
+        sync: false

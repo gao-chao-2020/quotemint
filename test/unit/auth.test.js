@@ -10,12 +10,13 @@ import { createSession, destroySession, hashPassword, resolveSession, sha256Hex,
 const dir = mkdtempSync(join(tmpdir(), 'qm-auth-'));
 const db = openDb(dir);
 
-after(() => {
-  db.close();
+after(async () => {
+  await db.close();
   rmSync(dir, { recursive: true, force: true });
 });
 
-db.prepare('INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)').run(
+await db.run(
+  'INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)',
   'a@b.co',
   hashPassword('demo1234!'),
   'A',
@@ -47,29 +48,29 @@ test('hashes use unique salts', () => {
   assert.notEqual(hashPassword('same'), hashPassword('same'));
 });
 
-test('session lifecycle: create, resolve, destroy', () => {
-  const token = createSession(db, 1);
+test('session lifecycle: create, resolve, destroy', async () => {
+  const token = await createSession(db, 1);
   assert.match(token, /^[0-9a-f]{64}$/);
-  assert.equal(resolveSession(db, token), 1);
-  destroySession(db, token);
-  assert.equal(resolveSession(db, token), null);
-  assert.equal(resolveSession(db, 'deadbeef'), null);
-  assert.equal(resolveSession(db, null), null);
+  assert.equal(await resolveSession(db, token), 1);
+  await destroySession(db, token);
+  assert.equal(await resolveSession(db, token), null);
+  assert.equal(await resolveSession(db, 'deadbeef'), null);
+  assert.equal(await resolveSession(db, null), null);
 });
 
-test('session id is the sha256 of the token, never the token', () => {
-  const token = createSession(db, 1);
+test('session id is the sha256 of the token, never the token', async () => {
+  const token = await createSession(db, 1);
   const expected = createHash('sha256').update(token).digest('hex');
   assert.equal(sha256Hex(token), expected);
-  const row = db.prepare('SELECT id FROM sessions WHERE id = ?').get(expected);
+  const row = await db.get('SELECT id FROM sessions WHERE id = ?', expected);
   assert.ok(row);
-  assert.equal(db.prepare('SELECT id FROM sessions WHERE id = ?').get(token), undefined);
+  assert.equal(await db.get('SELECT id FROM sessions WHERE id = ?', token), undefined);
 });
 
-test('expired sessions resolve to null and are deleted', () => {
-  const token = createSession(db, 1);
+test('expired sessions resolve to null and are deleted', async () => {
+  const token = await createSession(db, 1);
   const id = sha256Hex(token);
-  db.prepare('UPDATE sessions SET expires_at = ? WHERE id = ?').run(new Date(Date.now() - 1000).toISOString(), id);
-  assert.equal(resolveSession(db, token), null);
-  assert.equal(db.prepare('SELECT id FROM sessions WHERE id = ?').get(id), undefined);
+  await db.run('UPDATE sessions SET expires_at = ? WHERE id = ?', new Date(Date.now() - 1000).toISOString(), id);
+  assert.equal(await resolveSession(db, token), null);
+  assert.equal(await db.get('SELECT id FROM sessions WHERE id = ?', id), undefined);
 });

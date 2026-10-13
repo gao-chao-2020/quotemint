@@ -41,7 +41,18 @@ export default {
     'bill.upgrade.unavailable': 'Upgrades are temporarily unavailable. Try again soon.',
     'bill.demo': 'Demo upgrade (dev only)',
 
-    'bill.foot': 'Payments are handled by Stripe. Cancel anytime — your quotes stay live.',
+    'bill.alipay.eyebrow': 'Alipay',
+    'bill.alipay.title': 'Upgrade with Alipay (China)',
+    'bill.alipay.price': '¥68',
+    'bill.alipay.period': '/year',
+    'bill.alipay.caption': 'Scan with Alipay (¥68/year)',
+    'bill.alipay.qr_alt': 'Alipay payment QR code',
+    'bill.alipay.step1': 'Scan to pay ¥68/year.',
+    'bill.alipay.step2': 'Email {email} with your account email.',
+    'bill.alipay.step3': 'Pro is activated within 1 business day.',
+    'bill.alipay.manual_note': 'Upgrades are activated manually.',
+
+    'bill.foot.provider': 'Payments are securely handled by {provider}. Cancel anytime — your quotes stay live.',
 
     'bill.busy.checkout': 'Starting checkout…',
     'bill.checkout_failed': 'Could not start checkout. Try again shortly.',
@@ -88,7 +99,18 @@ export default {
     'bill.upgrade.unavailable': '升级服务暂时不可用，请稍后再试。',
     'bill.demo': '演示升级（仅开发环境）',
 
-    'bill.foot': '支付由 Stripe 处理。随时可取消 —— 你的报价单将保持有效。',
+    'bill.alipay.eyebrow': '支付宝',
+    'bill.alipay.title': '支付宝升级',
+    'bill.alipay.price': '¥68',
+    'bill.alipay.period': '/年',
+    'bill.alipay.caption': '用支付宝扫码（¥68/年）',
+    'bill.alipay.qr_alt': '支付宝收款码',
+    'bill.alipay.step1': '扫码支付 ¥68（年付）。',
+    'bill.alipay.step2': '发送邮件至 {email}，注明你的注册邮箱。',
+    'bill.alipay.step3': '1 个工作日内为你开通 Pro 年费。',
+    'bill.alipay.manual_note': '升级以人工开通方式完成。',
+
+    'bill.foot.provider': '支付由 {provider} 安全处理。随时可取消 —— 你的报价单将保持有效。',
 
     'bill.busy.checkout': '正在发起结账…',
     'bill.checkout_failed': '无法发起结账，请稍后再试。',

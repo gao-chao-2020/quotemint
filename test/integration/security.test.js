@@ -108,7 +108,7 @@ test('static path traversal attempts -> 404, never file contents (§13)', async 
   for (const path of ['/..%2fpackage.json', '/%2e%2e/package.json', '/..%2f..%2fpackage.json']) {
     const res = await api(server, 'GET', path);
     assert.equal(res.status, 404, `${path} should 404`);
-    assert.ok(!res.text.includes('quotemint'), `${path} leaked package.json`);
+    assert.ok(!res.text.includes('"name": "quotemint"'), `${path} leaked package.json`);
   }
   const control = await api(server, 'GET', '/styles.css');
   assert.equal(control.status, 200, 'static serving itself must work');

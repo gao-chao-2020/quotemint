@@ -3,9 +3,12 @@
 // Backend routes import templates through the barrel (./index.js) only.
 
 import { clientStrings, normalizeLang, t } from './i18n.js';
+import { isPro } from '../lib/gating.js';
 
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const DEFAULT_BRAND = '#4F46E5';
+
+export const SUPPORT_EMAIL = 'support@quotemint.com';
 
 export function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
@@ -144,7 +147,7 @@ function logoMark() {
 }
 
 function planPill(user, lang) {
-  return user.plan === 'pro'
+  return isPro(user)
     ? `<span class="pill pill-pro">${esc(t(lang, 'nav.plan.pro'))}</span>`
     : `<span class="pill pill-free">${esc(t(lang, 'nav.plan.free'))}</span>`;
 }
@@ -219,6 +222,15 @@ ${langSwitch(lang, path, 'lang-switch-mobile')}
 </header>`;
 }
 
+// Legal links + support contact row, shared by all three footers (contract §17).
+export function footerMeta(lang) {
+  const sep = '<span class="footer-sep" aria-hidden="true">·</span>';
+  const privacy = `<a class="footer-link" href="/privacy">${esc(t(lang, 'footer.privacy'))}</a>`;
+  const terms = `<a class="footer-link" href="/terms">${esc(t(lang, 'footer.terms'))}</a>`;
+  const contact = esc(t(lang, 'footer.contact', { email: SUPPORT_EMAIL }));
+  return `<p class="footer-meta-row">${privacy}${sep}${terms}${sep}<a class="footer-link" href="mailto:${SUPPORT_EMAIL}">${contact}</a></p>`;
+}
+
 function siteFooter(lang) {
   return `<footer class="site-footer">
 <div class="container footer-grid">
@@ -240,6 +252,7 @@ function siteFooter(lang) {
 </div>
 <div class="container footer-bottom">
 <p>${t(lang, 'footer.rights')}</p>
+${footerMeta(lang)}
 </div>
 </footer>`;
 }
@@ -249,6 +262,7 @@ function appFooter(lang) {
 <div class="container app-footer-inner">
 <span>${t(lang, 'footer.app_brand')}</span>
 <span class="muted">${t(lang, 'footer.app_tagline')}</span>
+${footerMeta(lang)}
 </div>
 </footer>`;
 }

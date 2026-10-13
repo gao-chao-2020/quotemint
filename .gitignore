@@ -4,6 +4,7 @@ data-test/
 data-smoke/
 tmp-*
 .env
+账号信息.md
 .claude/
 *.log
 .DS_Store

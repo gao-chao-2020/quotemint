@@ -81,7 +81,7 @@ export function renewsAtFromNow(now = new Date()) {
   return new Date(now.getTime() + RENEWAL_DAYS * 24 * 60 * 60 * 1000).toISOString();
 }
 
-export function handleWebhookEvent(db, event) {
+export async function handleWebhookEvent(db, event) {
   if (!event || typeof event !== 'object') return { handled: false };
   const type = event.type;
   const object = event.data?.object;
@@ -94,11 +94,10 @@ export function handleWebhookEvent(db, event) {
     const userIdRaw = object.metadata?.user_id ?? object.client_reference_id;
     const userId = Number(userIdRaw);
     if (!Number.isInteger(userId) || userId <= 0) return { handled: false };
-    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    const user = await db.get('SELECT id FROM users WHERE id = ?', userId);
     if (!user) return { handled: false };
-    db.prepare(
-      `UPDATE users SET plan = 'pro', stripe_customer_id = ?, stripe_subscription_id = ?, plan_renews_at = ? WHERE id = ?`
-    ).run(
+    await db.run(
+      `UPDATE users SET plan = 'pro', stripe_customer_id = ?, stripe_subscription_id = ?, plan_renews_at = ? WHERE id = ?`,
       object.customer ?? null,
       object.subscription ?? null,
       renewsAtFromNow(),
@@ -110,11 +109,10 @@ export function handleWebhookEvent(db, event) {
   if (type === 'customer.subscription.deleted' && object) {
     const subscriptionId = object.id;
     if (typeof subscriptionId !== 'string' || !subscriptionId) return { handled: false };
-    const result = db
-      .prepare(
-        `UPDATE users SET plan = 'free', stripe_subscription_id = NULL, plan_renews_at = NULL WHERE stripe_subscription_id = ?`
-      )
-      .run(subscriptionId);
+    const result = await db.run(
+      `UPDATE users SET plan = 'free', stripe_subscription_id = NULL, plan_renews_at = NULL WHERE stripe_subscription_id = ?`,
+      subscriptionId
+    );
     return { handled: result.changes > 0 };
   }
 

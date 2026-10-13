@@ -18,8 +18,8 @@ const SECRET = 'whsec_test_123';
 const dir = mkdtempSync(join(tmpdir(), 'qm-stripe-'));
 const db = openDb(dir);
 
-after(() => {
-  db.close();
+after(async () => {
+  await db.close();
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -69,8 +69,9 @@ test('signature header with several v1 values accepts any match', () => {
   assert.deepEqual(parseSignatureHeader(header).v1.length, 2);
 });
 
-test('handleWebhookEvent upgrades user on checkout.session.completed', () => {
-  db.prepare('INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)').run(
+test('handleWebhookEvent upgrades user on checkout.session.completed', async () => {
+  await db.run(
+    'INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)',
     'buyer@test.dev',
     'scrypt$x$y',
     'Buyer',
@@ -89,15 +90,15 @@ test('handleWebhookEvent upgrades user on checkout.session.completed', () => {
       }
     }
   };
-  assert.deepEqual(handleWebhookEvent(db, event), { handled: true });
-  const user = db.prepare('SELECT * FROM users WHERE id = 1').get();
+  assert.deepEqual(await handleWebhookEvent(db, event), { handled: true });
+  const user = await db.get('SELECT * FROM users WHERE id = 1');
   assert.equal(user.plan, 'pro');
   assert.equal(user.stripe_customer_id, 'cus_123');
   assert.equal(user.stripe_subscription_id, 'sub_123');
   assert.ok(new Date(user.plan_renews_at).getTime() > Date.now());
 });
 
-test('handleWebhookEvent falls back to client_reference_id and ignores unknown users', () => {
+test('handleWebhookEvent falls back to client_reference_id and ignores unknown users', async () => {
   const fallback = {
     type: 'checkout.session.completed',
     data: {
@@ -110,29 +111,29 @@ test('handleWebhookEvent falls back to client_reference_id and ignores unknown u
       }
     }
   };
-  assert.deepEqual(handleWebhookEvent(db, fallback), { handled: true });
+  assert.deepEqual(await handleWebhookEvent(db, fallback), { handled: true });
   const unknown = {
     type: 'checkout.session.completed',
     data: { object: { mode: 'subscription', payment_status: 'paid', metadata: { user_id: '999' } } }
   };
-  assert.deepEqual(handleWebhookEvent(db, unknown), { handled: false });
-  assert.deepEqual(handleWebhookEvent(db, { type: 'invoice.paid', data: { object: {} } }), { handled: false });
-  assert.deepEqual(handleWebhookEvent(db, null), { handled: false });
+  assert.deepEqual(await handleWebhookEvent(db, unknown), { handled: false });
+  assert.deepEqual(await handleWebhookEvent(db, { type: 'invoice.paid', data: { object: {} } }), { handled: false });
+  assert.deepEqual(await handleWebhookEvent(db, null), { handled: false });
 });
 
-test('handleWebhookEvent ignores non-subscription or unpaid checkout sessions', () => {
+test('handleWebhookEvent ignores non-subscription or unpaid checkout sessions', async () => {
   const base = { metadata: { user_id: '1' }, customer: 'cus_x', subscription: 'sub_x' };
   const oneTime = {
     type: 'checkout.session.completed',
     data: { object: { ...base, mode: 'payment', payment_status: 'paid' } }
   };
-  assert.deepEqual(handleWebhookEvent(db, oneTime), { handled: false });
+  assert.deepEqual(await handleWebhookEvent(db, oneTime), { handled: false });
   const unpaid = {
     type: 'checkout.session.completed',
     data: { object: { ...base, mode: 'subscription', payment_status: 'unpaid' } }
   };
-  assert.deepEqual(handleWebhookEvent(db, unpaid), { handled: false });
-  const user = db.prepare('SELECT * FROM users WHERE id = 1').get();
+  assert.deepEqual(await handleWebhookEvent(db, unpaid), { handled: false });
+  const user = await db.get('SELECT * FROM users WHERE id = 1');
   assert.equal(user.plan, 'pro');
   assert.equal(user.stripe_customer_id, 'cus_9');
   assert.equal(user.stripe_subscription_id, 'sub_9');
@@ -140,16 +141,16 @@ test('handleWebhookEvent ignores non-subscription or unpaid checkout sessions', 
     type: 'checkout.session.completed',
     data: { object: { ...base, customer: 'cus_9', subscription: 'sub_9', mode: 'subscription', payment_status: 'no_payment_required' } }
   };
-  assert.deepEqual(handleWebhookEvent(db, noPaymentRequired), { handled: true });
+  assert.deepEqual(await handleWebhookEvent(db, noPaymentRequired), { handled: true });
 });
 
-test('customer.subscription.deleted downgrades matching user', () => {
+test('customer.subscription.deleted downgrades matching user', async () => {
   const event = { type: 'customer.subscription.deleted', data: { object: { id: 'sub_9' } } };
-  assert.deepEqual(handleWebhookEvent(db, event), { handled: true });
-  const user = db.prepare('SELECT * FROM users WHERE id = 1').get();
+  assert.deepEqual(await handleWebhookEvent(db, event), { handled: true });
+  const user = await db.get('SELECT * FROM users WHERE id = 1');
   assert.equal(user.plan, 'free');
   assert.equal(user.stripe_subscription_id, null);
-  assert.deepEqual(handleWebhookEvent(db, event), { handled: false });
+  assert.deepEqual(await handleWebhookEvent(db, event), { handled: false });
 });
 
 test('isConfigured requires both secret key and price id', () => {

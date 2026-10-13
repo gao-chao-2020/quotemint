@@ -36,6 +36,10 @@ export async function boot({ port, env = {} } = {}) {
       STRIPE_WEBHOOK_SECRET: '',
       STRIPE_SECRET_KEY: '',
       STRIPE_PRICE_ID: '',
+      CREEM_API_KEY: '',
+      CREEM_PRODUCT_ID: '',
+      CREEM_WEBHOOK_SECRET: '',
+      CREEM_API_BASE: '',
       ...env
     },
     stdio: ['ignore', 'pipe', 'pipe']

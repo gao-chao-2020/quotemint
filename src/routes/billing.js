@@ -1,6 +1,8 @@
 import { sendError, sendJson, HttpError } from '../lib/http.js';
 import { publicUser } from '../lib/auth.js';
-import { createCheckoutSession, handleWebhookEvent, isConfigured, isDemoMode, renewsAtFromNow, verifyWebhook } from '../lib/stripe.js';
+import { createCheckoutSession, isConfigured, isDemoMode, providerName, renewsAtFromNow } from '../lib/billing.js';
+import * as creem from '../lib/creem.js';
+import { handleWebhookEvent, verifyWebhook } from '../lib/stripe.js';
 
 const RAW_LIMIT_BYTES = 1024 * 1024;
 
@@ -14,11 +16,11 @@ export async function checkout(req, res, ctx) {
     return;
   }
   try {
-    const url = await createCheckoutSession(ctx.user);
+    const url = await createCheckoutSession(ctx.db, ctx.user);
     sendJson(res, 200, { ok: true, data: { url } });
   } catch (err) {
     console.error('checkout session failed:', err.message);
-    sendError(res, 502, 'stripe_error', 'Could not start checkout. Try again shortly.');
+    sendError(res, 502, providerName() === 'creem' ? 'creem_error' : 'stripe_error', 'Could not start checkout. Try again shortly.');
   }
 }
 
@@ -31,10 +33,8 @@ export async function demoUpgrade(req, res, ctx) {
     sendError(res, 403, 'demo_disabled', 'Demo upgrades are disabled');
     return;
   }
-  ctx.db
-    .prepare(`UPDATE users SET plan = 'pro', plan_renews_at = ? WHERE id = ?`)
-    .run(renewsAtFromNow(), ctx.user.id);
-  const user = ctx.db.prepare('SELECT * FROM users WHERE id = ?').get(ctx.user.id);
+  await ctx.db.run(`UPDATE users SET plan = 'pro', plan_renews_at = ? WHERE id = ?`, renewsAtFromNow(), ctx.user.id);
+  const user = await ctx.db.get('SELECT * FROM users WHERE id = ?', ctx.user.id);
   sendJson(res, 200, { ok: true, data: { user: publicUser(user) } });
 }
 
@@ -85,6 +85,28 @@ export async function stripeWebhook(req, res, ctx) {
     sendError(res, 400, 'invalid_payload', 'Body must be JSON');
     return;
   }
-  handleWebhookEvent(ctx.db, event);
+  await handleWebhookEvent(ctx.db, event);
+  sendJson(res, 200, { received: true });
+}
+
+export async function creemWebhook(req, res, ctx) {
+  if (!ctx.creemWebhookSecret) {
+    sendError(res, 503, 'billing_disabled', 'Webhook secret is not configured');
+    return;
+  }
+  const raw = await readRawBody(req);
+  const result = creem.verifyWebhook(raw.toString('utf8'), req.headers['creem-signature'], ctx.creemWebhookSecret);
+  if (!result.ok) {
+    sendError(res, 400, 'invalid_signature', 'Signature verification failed');
+    return;
+  }
+  let event = null;
+  try {
+    event = JSON.parse(raw.toString('utf8'));
+  } catch {
+    sendError(res, 400, 'invalid_payload', 'Body must be JSON');
+    return;
+  }
+  await creem.handleWebhookEvent(ctx.db, event);
   sendJson(res, 200, { received: true });
 }

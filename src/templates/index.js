@@ -6,4 +6,5 @@ export { renderDashboard } from './dashboard.js';
 export { renderEditor } from './editor.js';
 export { renderBilling } from './billing.js';
 export { renderPublicQuote } from './publicquote.js';
+export { renderLegal } from './legal.js';
 export { renderError } from './error.js';

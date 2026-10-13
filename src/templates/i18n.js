@@ -9,10 +9,11 @@ import dictDashboard from './dict-dashboard.js';
 import dictEditor from './dict-editor.js';
 import dictBilling from './dict-billing.js';
 import dictQuote from './dict-quote.js';
+import dictLegal from './dict-legal.js';
 
 export const LANGS = ['en', 'zh'];
 
-const PARTS = [dictCommon, dictLayout, dictLanding, dictAuth, dictDashboard, dictEditor, dictBilling, dictQuote];
+const PARTS = [dictCommon, dictLayout, dictLanding, dictAuth, dictDashboard, dictEditor, dictBilling, dictQuote, dictLegal];
 
 const DICTS = { en: {}, zh: {} };
 for (const part of PARTS) {

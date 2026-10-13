@@ -87,17 +87,28 @@ WantedBy=multi-user.target
 | `DATA_DIR` | `./data` | SQLite 数据目录 |
 | `DEMO_MODE` | `false` | `true` 时显示演示升级按钮并允许 seed；生产环境（`NODE_ENV=production`）下强制关闭，否则拒绝启动 |
 | `TRUST_PROXY` | 空 | 反向代理（Caddy/Nginx）后面部署时设为 `1`，限流才会取用 `X-Forwarded-For` 真实客户端 IP |
-| `STRIPE_SECRET_KEY` | — | Stripe 密钥；为空时计费功能自动禁用 |
-| `STRIPE_PRICE_ID` | — | Pro 订阅价格 ID |
-| `STRIPE_WEBHOOK_SECRET` | — | Webhook 签名密钥 |
+| `CREEM_API_KEY` | — | Creem 密钥；设置后计费走 Creem（优先） |
+| `CREEM_PRODUCT_ID` | — | Creem Pro 订阅产品 ID |
+| `CREEM_WEBHOOK_SECRET` | — | Creem Webhook 签名密钥 |
+| `CREEM_API_BASE` | 官方地址 | 仅测试用：将 Creem API 指向本地模拟服务 |
+| `STRIPE_SECRET_KEY` | — | Stripe 密钥；无 Creem 时生效 |
+| `STRIPE_PRICE_ID` | — | Stripe Pro 订阅价格 ID |
+| `STRIPE_WEBHOOK_SECRET` | — | Stripe Webhook 签名密钥 |
 
-## 开通收款（Stripe，15 分钟）
+## 开通收款（Creem 为主，Stripe 可选）
 
-1. 注册 Stripe 账号 → Dashboard → 创建 Product "QuoteMint Pro"。
-2. 添加两个 Price：$9/月（recurring monthly）、$90/年（recurring yearly）；把月付 Price ID 填入 `STRIPE_PRICE_ID`（年付可作为后续迭代）。
-3. Developers → API keys → 复制 Secret key 到 `STRIPE_SECRET_KEY`。
-4. Developers → Webhooks → Add endpoint：`https://your-domain.com/webhooks/stripe`，事件选 `checkout.session.completed` 和 `customer.subscription.deleted` → 复制签名密钥到 `STRIPE_WEBHOOK_SECRET`。
-5. 测试卡 `4242 4242 4242 4242` 走一遍升级流程，验收后切 Live 密钥。
+计费提供商按环境变量自动选择：设了 `CREEM_API_KEY` 用 Creem → 否则设了 Stripe 密钥用 Stripe → 都没有则计费关闭。
+
+**Creem（推荐，个人可注册、支持订阅、可提现至支付宝/Wise 中转）**：
+1. 在 creem.io 用邮箱注册并完成身份验证（个人身份证件即可）。
+2. Dashboard 创建 Product "QuoteMint Pro"（订阅制），复制 Product ID 到 `CREEM_PRODUCT_ID`。
+3. 创建 API Key（`creem_...`）到 `CREEM_API_KEY`。
+4. Webhooks → Add endpoint `https://<域名>/webhooks/creem`，事件至少含 checkout 完成与订阅取消/过期类 → 复制签名密钥到 `CREEM_WEBHOOK_SECRET`。
+5. 用 Creem 测试模式走一遍升级 → 验收后切正式。
+
+> Creem 商户审核要求网站已上线且含隐私政策、服务条款与可联系的客服邮箱——本站已内置 `/privacy`、`/terms` 与 `support@` 联系位，直接提交域名即可。
+
+**Stripe（有海外主体时可选）**：创建 Product + 月付 Price → `STRIPE_PRICE_ID`；Webhook 指向 `/webhooks/stripe`（事件 `checkout.session.completed`、`customer.subscription.deleted`）→ 测试卡 `4242 4242 4242 4242` 验收。
 
 ## 目录结构
 

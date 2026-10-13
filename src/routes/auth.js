@@ -1,6 +1,6 @@
 import { createRateLimiter, readJson, sendError, sendJson, setSessionCookie, clearSessionCookie, clientIp, parseCookies } from '../lib/http.js';
 import { createSession, destroySession, hashPassword, publicUser, SESSION_COOKIE, verifyPassword } from '../lib/auth.js';
-import { quotaFor } from '../lib/gating.js';
+import { isPro, quotaFor } from '../lib/gating.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -33,7 +33,7 @@ export async function signup(req, res, ctx) {
     sendError(res, 400, 'invalid_name', 'Name must be 1-80 characters');
     return;
   }
-  const existing = ctx.db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  const existing = await ctx.db.get('SELECT id FROM users WHERE email = ?', email);
   if (existing) {
     sendError(res, 409, 'email_taken', 'An account with this email already exists');
     return;
@@ -41,18 +41,22 @@ export async function signup(req, res, ctx) {
   const now = new Date().toISOString();
   let info;
   try {
-    info = ctx.db
-      .prepare('INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)')
-      .run(email, hashPassword(password), name, now);
+    info = await ctx.db.run(
+      'INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)',
+      email,
+      hashPassword(password),
+      name,
+      now
+    );
   } catch (err) {
-    if (String(err.message).includes('UNIQUE')) {
+    if (ctx.db.isUniqueError(err)) {
       sendError(res, 409, 'email_taken', 'An account with this email already exists');
       return;
     }
     throw err;
   }
-  const user = ctx.db.prepare('SELECT * FROM users WHERE id = ?').get(Number(info.lastInsertRowid));
-  const token = createSession(ctx.db, user.id);
+  const user = await ctx.db.get('SELECT * FROM users WHERE id = ?', info.lastInsertRowid);
+  const token = await createSession(ctx.db, user.id);
   setSessionCookie(res, token, ctx.baseUrl);
   sendJson(res, 201, { ok: true, data: { user: publicUser(user) } });
 }
@@ -64,7 +68,7 @@ export async function login(req, res, ctx) {
   }
   const body = await readJson(req);
   const email = normalizeEmail(body.email);
-  const user = email ? ctx.db.prepare('SELECT * FROM users WHERE email = ?').get(email) : null;
+  const user = email ? await ctx.db.get('SELECT * FROM users WHERE email = ?', email) : null;
   const password = typeof body.password === 'string' ? body.password : '';
   // Unknown email still burns one scrypt verify so login timing does not enumerate accounts.
   const valid = user
@@ -74,14 +78,14 @@ export async function login(req, res, ctx) {
     sendError(res, 401, 'invalid_credentials', 'Incorrect email or password');
     return;
   }
-  const token = createSession(ctx.db, user.id);
+  const token = await createSession(ctx.db, user.id);
   setSessionCookie(res, token, ctx.baseUrl);
   sendJson(res, 200, { ok: true, data: { user: publicUser(user) } });
 }
 
 export async function logout(req, res, ctx) {
   const token = parseCookies(req)[SESSION_COOKIE];
-  if (token) destroySession(ctx.db, token);
+  if (token) await destroySession(ctx.db, token);
   clearSessionCookie(res);
   sendJson(res, 200, { ok: true });
 }
@@ -91,7 +95,7 @@ export async function me(req, res, ctx) {
     sendError(res, 401, 'not_authenticated', 'Log in to continue');
     return;
   }
-  sendJson(res, 200, { ok: true, data: { user: publicUser(ctx.user), quota: quotaFor(ctx.db, ctx.user) } });
+  sendJson(res, 200, { ok: true, data: { user: publicUser(ctx.user), quota: await quotaFor(ctx.db, ctx.user) } });
 }
 
 export async function updateProfile(req, res, ctx) {
@@ -112,7 +116,7 @@ export async function updateProfile(req, res, ctx) {
   }
 
   const brandingTouched = body.company !== undefined || body.brand_color !== undefined || body.logo_text !== undefined;
-  if (brandingTouched && ctx.user.plan !== 'pro') {
+  if (brandingTouched && !isPro(ctx.user)) {
     sendError(res, 403, 'pro_required', 'Custom branding requires the Pro plan');
     return;
   }
@@ -143,10 +147,12 @@ export async function updateProfile(req, res, ctx) {
   const keys = Object.keys(updates);
   if (keys.length > 0) {
     const setClause = keys.map((key) => `${key} = ?`).join(', ');
-    ctx.db
-      .prepare(`UPDATE users SET ${setClause} WHERE id = ?`)
-      .run(...keys.map((key) => updates[key]), ctx.user.id);
+    await ctx.db.run(
+      `UPDATE users SET ${setClause} WHERE id = ?`,
+      ...keys.map((key) => updates[key]),
+      ctx.user.id
+    );
   }
-  const user = ctx.db.prepare('SELECT * FROM users WHERE id = ?').get(ctx.user.id);
+  const user = await ctx.db.get('SELECT * FROM users WHERE id = ?', ctx.user.id);
   sendJson(res, 200, { ok: true, data: { user: publicUser(user) } });
 }

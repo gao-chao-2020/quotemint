@@ -29,11 +29,12 @@ export function sha256Hex(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-export function createSession(db, userId) {
+export async function createSession(db, userId) {
   const token = randomBytes(32).toString('hex');
   const now = new Date();
   const expires = new Date(now.getTime() + SESSION_TTL_MS);
-  db.prepare('INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)').run(
+  await db.run(
+    'INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)',
     sha256Hex(token),
     userId,
     expires.toISOString(),
@@ -42,19 +43,17 @@ export function createSession(db, userId) {
   return token;
 }
 
-export function destroySession(db, token) {
+export async function destroySession(db, token) {
   if (!token) return;
-  db.prepare('DELETE FROM sessions WHERE id = ?').run(sha256Hex(token));
+  await db.run('DELETE FROM sessions WHERE id = ?', sha256Hex(token));
 }
 
-export function resolveSession(db, token) {
+export async function resolveSession(db, token) {
   if (!token) return null;
-  const row = db
-    .prepare('SELECT user_id, expires_at FROM sessions WHERE id = ?')
-    .get(sha256Hex(token));
+  const row = await db.get('SELECT user_id, expires_at FROM sessions WHERE id = ?', sha256Hex(token));
   if (!row) return null;
   if (new Date(row.expires_at).getTime() <= Date.now()) {
-    db.prepare('DELETE FROM sessions WHERE id = ?').run(sha256Hex(token));
+    await db.run('DELETE FROM sessions WHERE id = ?', sha256Hex(token));
     return null;
   }
   return row.user_id;

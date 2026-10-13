@@ -1,7 +1,7 @@
 // Public quote page (GET /q/:token). Document-style layout, print-optimized A4.
 // Branding (company/logo_text/brand_color) applies when the owner is on Pro.
 
-import { bootScript, computeTotals, esc, formatDate, formatDateTime, formatMoney, icon, langSwitch, layout } from './layout.js';
+import { bootScript, computeTotals, esc, footerMeta, formatDate, formatDateTime, formatMoney, icon, langSwitch, layout } from './layout.js';
 import { t } from './i18n.js';
 
 function issuerName(branding) {
@@ -166,6 +166,7 @@ ${branding?.logo_text && branding?.company ? `<div class="doc-issuer-sub">${esc(
 
   const foot = `<footer class="doc-foot no-print">
 ${showBadge ? `<a class="powered" href="/" target="_blank" rel="noopener">${t(lang, 'quote.powered_by')}</a>` : ''}
+${footerMeta(lang)}
 ${langSwitch(lang, resolvedPath)}
 </footer>`;
 

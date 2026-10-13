@@ -1,21 +1,32 @@
-// Billing page (GET /app/billing). Plan card, Pro benefits, checkout / demo upgrade.
+// Billing page (GET /app/billing). Plan card, Pro benefits, checkout / demo upgrade,
+// manual Alipay upgrade card (rendered when public/alipay-qr.png exists).
 
-import { esc, formatDate, icon, layout } from './layout.js';
+import { esc, formatDate, icon, layout, SUPPORT_EMAIL } from './layout.js';
+import { isPro } from '../lib/gating.js';
 import { t } from './i18n.js';
 
 function checkItem(text) {
   return `<li class="check-item">${icon('check', 16)}<span>${esc(text)}</span></li>`;
 }
 
-export function renderBilling({ user, billingEnabled = false, demoMode = false, upgraded = false, lang = 'en', path = '/app/billing' } = {}) {
-  const isPro = user?.plan === 'pro';
+function providerLabel(name) {
+  const value = String(name ?? '').trim();
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
+}
+
+export function renderBilling({ user, billingEnabled = false, demoMode = false, upgraded = false, providerName = null, alipayQr = false, lang = 'en', path = '/app/billing' } = {}) {
+  const pro = isPro(user);
   const period = esc(t(lang, 'bill.period'));
+  const provider = providerLabel(providerName);
+  const footLine = provider
+    ? t(lang, 'bill.foot.provider', { provider })
+    : t(lang, 'bill.upgrade.unavailable');
 
   const upgradedBanner = upgraded
     ? `<div class="banner banner-success" id="upgraded-banner" role="status">${icon('check-circle', 18)}<div><strong>${esc(t(lang, 'bill.banner.title'))}</strong><p>${esc(t(lang, 'bill.banner.body'))}</p></div></div>`
     : '';
 
-  const planCard = isPro
+  const planCard = pro
     ? `<article class="plan-card plan-card-pro">
 <div class="plan-head">
 <div><p class="plan-eyebrow">${esc(t(lang, 'bill.current_plan'))}</p><h2 class="plan-name">${esc(t(lang, 'bill.plan.pro'))}</h2></div>
@@ -45,7 +56,7 @@ ${checkItem(t(lang, 'bill.check.badge'))}
 </ul>
 </article>`;
 
-  const upgradeCard = isPro
+  const upgradeCard = pro
     ? `<article class="plan-card plan-card-upgrade">
 <div class="plan-head">
 <div><p class="plan-eyebrow">${esc(t(lang, 'bill.upgrade.eyebrow'))}</p><h2 class="plan-name">${esc(t(lang, 'bill.upgrade.on_pro'))}</h2></div>
@@ -77,6 +88,27 @@ ${billingEnabled
 ${demoMode ? `<button type="button" class="btn btn-secondary btn-block" id="demo-upgrade-btn">${esc(t(lang, 'bill.demo'))}</button>` : ''}
 </article>`;
 
+  const alipayCard = !pro && alipayQr
+    ? `<article class="plan-card plan-card-alipay">
+<div class="plan-head">
+<div><p class="plan-eyebrow">${esc(t(lang, 'bill.alipay.eyebrow'))}</p><h2 class="plan-name">${esc(t(lang, 'bill.alipay.title'))}</h2></div>
+</div>
+<p class="plan-price">${esc(t(lang, 'bill.alipay.price'))}<span class="price-period">${esc(t(lang, 'bill.alipay.period'))}</span></p>
+<div class="alipay-body">
+<figure class="alipay-qr-wrap">
+<img class="alipay-qr" src="/alipay-qr.png" alt="${esc(t(lang, 'bill.alipay.qr_alt'))}">
+<figcaption class="alipay-caption">${esc(t(lang, 'bill.alipay.caption'))}</figcaption>
+<p class="alipay-manual">${esc(t(lang, 'bill.alipay.manual_note'))}</p>
+</figure>
+<ol class="alipay-steps">
+<li>${esc(t(lang, 'bill.alipay.step1'))}</li>
+<li>${esc(t(lang, 'bill.alipay.step2', { email: SUPPORT_EMAIL }))}</li>
+<li>${esc(t(lang, 'bill.alipay.step3'))}</li>
+</ol>
+</div>
+</article>`
+    : '';
+
   const body = `
 <div class="container app-main">
 <div class="page-head">
@@ -88,9 +120,9 @@ ${demoMode ? `<button type="button" class="btn btn-secondary btn-block" id="demo
 ${upgradedBanner}
 <div class="plans">
 ${planCard}
-${upgradeCard}
+${upgradeCard}${alipayCard ? `\n${alipayCard}` : ''}
 </div>
-<p class="billing-foot muted">${esc(t(lang, 'bill.foot'))}</p>
+<p class="billing-foot muted">${esc(footLine)}</p>
 </div>`;
 
   return layout({

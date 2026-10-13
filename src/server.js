@@ -9,7 +9,7 @@ import * as authRoutes from './routes/auth.js';
 import * as quoteRoutes from './routes/quotes.js';
 import * as publicRoutes from './routes/public.js';
 import * as billingRoutes from './routes/billing.js';
-import { authPage, billingPage, dashboardPage, editQuotePage, errorPage, landingPage, langRoute, newQuotePage, notFoundPage, publicQuotePage } from './routes/pages.js';
+import { authPage, billingPage, dashboardPage, editQuotePage, errorPage, landingPage, langRoute, newQuotePage, notFoundPage, privacyPage, publicQuotePage, termsPage } from './routes/pages.js';
 
 if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE === 'true') {
   console.error('[fatal] DEMO_MODE=true is not allowed when NODE_ENV=production');
@@ -72,6 +72,8 @@ const routes = [
   route('GET', '/app/billing', billingPage),
   route('GET', '/q/:token', publicQuotePage),
   route('GET', '/lang/:code', langRoute),
+  route('GET', '/privacy', privacyPage),
+  route('GET', '/terms', termsPage),
   route('POST', '/api/auth/signup', authRoutes.signup),
   route('POST', '/api/auth/login', authRoutes.login),
   route('POST', '/api/auth/logout', authRoutes.logout),
@@ -87,7 +89,8 @@ const routes = [
   route('POST', '/api/public/quotes/:token/decline', publicRoutes.declinePublicQuote),
   route('POST', '/api/billing/checkout', billingRoutes.checkout),
   route('POST', '/api/billing/demo-upgrade', billingRoutes.demoUpgrade),
-  route('POST', '/webhooks/stripe', billingRoutes.stripeWebhook)
+  route('POST', '/webhooks/stripe', billingRoutes.stripeWebhook),
+  route('POST', '/webhooks/creem', billingRoutes.creemWebhook)
 ];
 
 function health(req, res) {
@@ -116,12 +119,12 @@ function serveStatic(req, res, pathname) {
   return true;
 }
 
-function resolveUser(req) {
+async function resolveUser(req) {
   const token = parseCookies(req)[SESSION_COOKIE];
   if (!token) return null;
-  const userId = resolveSession(db, token);
+  const userId = await resolveSession(db, token);
   if (!userId) return null;
-  return db.prepare('SELECT * FROM users WHERE id = ?').get(userId) || null;
+  return (await db.get('SELECT * FROM users WHERE id = ?', userId)) || null;
 }
 
 const server = createServer(async (req, res) => {
@@ -144,8 +147,9 @@ const server = createServer(async (req, res) => {
     const ctx = {
       db,
       baseUrl: BASE_URL,
-      user: resolveUser(req),
-      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || ''
+      user: await resolveUser(req),
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+      creemWebhookSecret: process.env.CREEM_WEBHOOK_SECRET || ''
     };
 
     for (const entry of routes) {

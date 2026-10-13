@@ -205,8 +205,15 @@ textarea.input { resize: vertical; min-height: 76px; line-height: 1.55; }
 .footer-col a { font-size: 14px; color: var(--ink-600); text-decoration: none; }
 .footer-col a:hover { color: var(--ink-900); }
 .footer-bottom { border-top: 1px solid var(--line); padding-top: 18px; padding-bottom: 18px; font-size: 13px; color: var(--ink-500); }
+.footer-bottom .footer-meta-row { margin-top: 7px; }
 .app-footer { border-top: 1px solid var(--line); }
-.app-footer-inner { display: flex; justify-content: space-between; gap: 16px; padding-top: 26px; padding-bottom: 26px; font-size: 13.5px; color: var(--ink-500); }
+.app-footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding-top: 26px; padding-bottom: 26px; font-size: 13.5px; color: var(--ink-500); }
+.app-footer-inner .footer-meta-row { flex-basis: 100%; }
+/* Legal links + support contact row (footers, contract §17) ----------------- */
+.footer-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; }
+.footer-meta-row .footer-link { color: inherit; text-decoration: none; }
+.footer-meta-row .footer-link:hover { color: var(--ink-900); text-decoration: underline; text-underline-offset: 3px; }
+.footer-sep { color: var(--ink-300); }
 /* Language switcher (contract §16) ----------------------------------------- */
 .lang-switch { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-500); white-space: nowrap; }
 .lang-current { color: var(--ink-900); }
@@ -469,6 +476,7 @@ td.doc-num { color: var(--ink-400); }
 .draft-notice { display: flex; align-items: center; gap: 9px; background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink); border-radius: var(--radius); padding: 12px 15px; font-size: 14px; font-weight: 500; margin-top: 26px; }
 .doc-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 42px; padding-top: 28px; border-top: 1px solid var(--line); }
 .doc-foot { margin-top: 38px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; }
+.doc-foot .footer-meta-row { justify-content: center; margin-top: 12px; }
 .powered { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-500); text-decoration: none; }
 .powered:hover { color: var(--ink-700); }
 .powered-brand { font-weight: 800; color: var(--ink-700); }
@@ -574,6 +582,30 @@ to { opacity: 1; transform: translateY(0); }
 .activity-label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-top: 4px; font-size: 14px; font-weight: 600; color: var(--ink-800); }
 .activity-time { font-size: 12.5px; font-weight: 500; color: var(--ink-500); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .activity-reason { margin-top: 3px; font-size: 13px; color: var(--ink-500); overflow-wrap: anywhere; }
+/* 23. Legal pages (privacy / terms) ---------------------------------------- */
+.legal-wrap { padding: 76px 0 96px; }
+.legal-head { margin-bottom: 22px; }
+.legal-title { font-size: clamp(1.9rem, 1.5rem + 1.7vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; }
+.legal-updated { font-size: 13.5px; color: var(--ink-500); margin-top: 12px; }
+.legal-intro { font-size: 16px; line-height: 1.7; color: var(--ink-600); }
+.legal-section { margin-top: 36px; }
+.legal-heading { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 10px; }
+.legal-text { font-size: 15px; line-height: 1.72; color: var(--ink-600); }
+.legal-text + .legal-text { margin-top: 10px; }
+.legal-text a { color: var(--brand-strong); font-weight: 600; }
+.legal-contact { margin-top: 46px; padding-top: 26px; border-top: 1px solid var(--line); }
+/* 24. Alipay upgrade card --------------------------------------------------- */
+.plan-card-alipay { grid-column: 1 / -1; }
+.alipay-body { display: flex; align-items: flex-start; gap: 26px; margin-top: 18px; }
+.alipay-qr-wrap { margin: 0; flex: none; display: grid; justify-items: center; gap: 8px; }
+.alipay-qr { width: 220px; max-width: 100%; height: auto; padding: 8px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.alipay-caption { font-size: 13px; color: var(--ink-500); text-align: center; }
+.alipay-manual { font-size: 12.5px; color: var(--ink-500); text-align: center; }
+.alipay-steps { display: grid; gap: 10px; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: var(--ink-600); }
+@media (max-width: 560px) {
+  .alipay-body { flex-direction: column; align-items: center; }
+  .alipay-steps { padding-left: 18px; }
+}
 /* 22. Print / motion ------------------------------------------------------- */
 @media print {
   @page { size: A4; margin: 14mm; }

@@ -112,8 +112,9 @@ export function validateQuoteBody(body) {
   };
 }
 
-export function recordEvent(db, quoteId, type, meta = '') {
-  db.prepare('INSERT INTO quote_events (quote_id, type, at, meta) VALUES (?, ?, ?, ?)').run(
+export async function recordEvent(db, quoteId, type, meta = '') {
+  await db.run(
+    'INSERT INTO quote_events (quote_id, type, at, meta) VALUES (?, ?, ?, ?)',
     quoteId,
     type,
     new Date().toISOString(),
@@ -144,78 +145,66 @@ export function quoteRowToFull(row, events = null) {
   return { quote, totals: quoteTotals(row), events };
 }
 
-export function listQuoteRows(db, userId) {
-  return db
-    .prepare(
-      `SELECT q.*, (SELECT COUNT(*) FROM quote_events e WHERE e.quote_id = q.id AND e.type = 'view') AS views
-       FROM quotes q WHERE q.user_id = ? ORDER BY q.id DESC`
-    )
-    .all(userId);
+export async function listQuoteRows(db, userId) {
+  return db.all(
+    `SELECT q.*, (SELECT COUNT(*) FROM quote_events e WHERE e.quote_id = q.id AND e.type = 'view') AS views
+     FROM quotes q WHERE q.user_id = ? ORDER BY q.id DESC`,
+    userId
+  );
 }
 
-export function fetchQuoteWithViews(db, quoteId, userId) {
-  return db
-    .prepare(
-      `SELECT q.*, (SELECT COUNT(*) FROM quote_events e WHERE e.quote_id = q.id AND e.type = 'view') AS views
-       FROM quotes q WHERE q.id = ? AND q.user_id = ?`
-    )
-    .get(quoteId, userId);
+export async function fetchQuoteWithViews(db, quoteId, userId) {
+  return db.get(
+    `SELECT q.*, (SELECT COUNT(*) FROM quote_events e WHERE e.quote_id = q.id AND e.type = 'view') AS views
+     FROM quotes q WHERE q.id = ? AND q.user_id = ?`,
+    quoteId,
+    userId
+  );
 }
 
-export function fetchQuoteByToken(db, token) {
-  return db.prepare('SELECT * FROM quotes WHERE public_token = ?').get(token);
+export async function fetchQuoteByToken(db, token) {
+  return db.get('SELECT * FROM quotes WHERE public_token = ?', token);
 }
 
-export function listEvents(db, quoteId) {
-  return db
-    .prepare('SELECT type, at, meta FROM quote_events WHERE quote_id = ? ORDER BY id ASC')
-    .all(quoteId);
+export async function listEvents(db, quoteId) {
+  return db.all('SELECT type, at, meta FROM quote_events WHERE quote_id = ? ORDER BY id ASC', quoteId);
 }
 
-export function insertQuote(db, user, data) {
-  db.exec('BEGIN IMMEDIATE');
-  try {
-    if (!canCreateQuote(db, user)) {
+export async function insertQuote(db, user, data) {
+  return db.transaction(async () => {
+    if (!(await canCreateQuote(db, user))) {
       throw new QuoteError(403, 'free_limit_reached', 'Free plan allows 3 quotes per month. Upgrade to Pro for unlimited quotes.');
     }
     const now = new Date().toISOString();
-    const info = db
-      .prepare(
-        `INSERT INTO quotes
-         (user_id, public_token, title, client_name, client_email, currency, items, discount_pct, tax_pct, notes, terms, status, valid_until, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`
-      )
-      .run(
-        user.id,
-        randomBytes(16).toString('hex'),
-        data.title,
-        data.client_name,
-        data.client_email,
-        data.currency,
-        JSON.stringify(data.items),
-        data.discount_pct,
-        data.tax_pct,
-        data.notes,
-        data.terms,
-        data.valid_until,
-        now,
-        now
-      );
-    db.exec('COMMIT');
-    return db.prepare('SELECT * FROM quotes WHERE id = ?').get(Number(info.lastInsertRowid));
-  } catch (err) {
-    db.exec('ROLLBACK');
-    throw err;
-  }
+    const info = await db.run(
+      `INSERT INTO quotes
+       (user_id, public_token, title, client_name, client_email, currency, items, discount_pct, tax_pct, notes, terms, status, valid_until, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
+      user.id,
+      randomBytes(16).toString('hex'),
+      data.title,
+      data.client_name,
+      data.client_email,
+      data.currency,
+      JSON.stringify(data.items),
+      data.discount_pct,
+      data.tax_pct,
+      data.notes,
+      data.terms,
+      data.valid_until,
+      now,
+      now
+    );
+    return db.get('SELECT * FROM quotes WHERE id = ?', info.lastInsertRowid);
+  });
 }
 
-export function updateQuoteRow(db, quoteId, userId, data) {
+export async function updateQuoteRow(db, quoteId, userId, data) {
   const now = new Date().toISOString();
-  const info = db.prepare(
+  const info = await db.run(
     `UPDATE quotes SET title = ?, client_name = ?, client_email = ?, currency = ?, items = ?,
      discount_pct = ?, tax_pct = ?, notes = ?, terms = ?, valid_until = ?, updated_at = ?
-     WHERE id = ? AND user_id = ? AND status = 'draft'`
-  ).run(
+     WHERE id = ? AND user_id = ? AND status = 'draft'`,
     data.title,
     data.client_name,
     data.client_email,
@@ -231,10 +220,10 @@ export function updateQuoteRow(db, quoteId, userId, data) {
     userId
   );
   if (info.changes === 0) return null;
-  return db.prepare('SELECT * FROM quotes WHERE id = ?').get(quoteId);
+  return db.get('SELECT * FROM quotes WHERE id = ?', quoteId);
 }
 
-export function sendQuote(db, row) {
+export async function sendQuote(db, row) {
   if (row.status === 'accepted' || row.status === 'declined') {
     throw new QuoteError(409, 'already_final', 'Quote is already final');
   }
@@ -243,29 +232,30 @@ export function sendQuote(db, row) {
   }
   const now = new Date().toISOString();
   if (row.status === 'draft') {
-    db.prepare('UPDATE quotes SET status = ?, sent_at = ?, updated_at = ? WHERE id = ?').run('sent', now, now, row.id);
-    recordEvent(db, row.id, 'sent');
+    await db.run('UPDATE quotes SET status = ?, sent_at = ?, updated_at = ? WHERE id = ?', 'sent', now, now, row.id);
+    await recordEvent(db, row.id, 'sent');
   }
-  return db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+  return db.get('SELECT * FROM quotes WHERE id = ?', row.id);
 }
 
-export function markViewed(db, row) {
+export async function markViewed(db, row) {
   if (row.status === 'draft') return row;
   let current = row;
   if (row.status === 'sent') {
     const now = new Date().toISOString();
-    db.prepare('UPDATE quotes SET status = ?, viewed_at = ?, updated_at = ? WHERE id = ?').run('viewed', now, now, row.id);
-    current = db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+    await db.run('UPDATE quotes SET status = ?, viewed_at = ?, updated_at = ? WHERE id = ?', 'viewed', now, now, row.id);
+    current = await db.get('SELECT * FROM quotes WHERE id = ?', row.id);
   }
-  const lastView = db
-    .prepare(`SELECT at FROM quote_events WHERE quote_id = ? AND type = 'view' ORDER BY id DESC LIMIT 1`)
-    .get(row.id);
+  const lastView = await db.get(
+    `SELECT at FROM quote_events WHERE quote_id = ? AND type = 'view' ORDER BY id DESC LIMIT 1`,
+    row.id
+  );
   // Collapse refresh spam: at most one view event per minute.
-  if (!lastView || Date.now() - Date.parse(lastView.at) >= 60 * 1000) recordEvent(db, row.id, 'view');
+  if (!lastView || Date.now() - Date.parse(lastView.at) >= 60 * 1000) await recordEvent(db, row.id, 'view');
   return current;
 }
 
-export function acceptQuote(db, row, name) {
+export async function acceptQuote(db, row, name) {
   if (row.status === 'accepted' || row.status === 'declined') {
     throw new QuoteError(409, 'already_final', 'Quote is already final');
   }
@@ -273,18 +263,19 @@ export function acceptQuote(db, row, name) {
     throw new QuoteError(404, 'not_found', 'Quote not found');
   }
   const now = new Date().toISOString();
-  db.prepare('UPDATE quotes SET status = ?, accepted_at = ?, accepted_name = ?, updated_at = ? WHERE id = ?').run(
+  await db.run(
+    'UPDATE quotes SET status = ?, accepted_at = ?, accepted_name = ?, updated_at = ? WHERE id = ?',
     'accepted',
     now,
     name,
     now,
     row.id
   );
-  recordEvent(db, row.id, 'accept');
-  return db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+  await recordEvent(db, row.id, 'accept');
+  return db.get('SELECT * FROM quotes WHERE id = ?', row.id);
 }
 
-export function declineQuote(db, row, reason = '') {
+export async function declineQuote(db, row, reason = '') {
   if (row.status === 'accepted' || row.status === 'declined') {
     throw new QuoteError(409, 'already_final', 'Quote is already final');
   }
@@ -292,7 +283,7 @@ export function declineQuote(db, row, reason = '') {
     throw new QuoteError(404, 'not_found', 'Quote not found');
   }
   const now = new Date().toISOString();
-  db.prepare('UPDATE quotes SET status = ?, declined_at = ?, updated_at = ? WHERE id = ?').run('declined', now, now, row.id);
-  recordEvent(db, row.id, 'decline', reason);
-  return db.prepare('SELECT * FROM quotes WHERE id = ?').get(row.id);
+  await db.run('UPDATE quotes SET status = ?, declined_at = ?, updated_at = ? WHERE id = ?', 'declined', now, now, row.id);
+  await recordEvent(db, row.id, 'decline', reason);
+  return db.get('SELECT * FROM quotes WHERE id = ?', row.id);
 }

@@ -1,5 +1,5 @@
 import { readJson, sendError, sendJson } from '../lib/http.js';
-import { quotaFor } from '../lib/gating.js';
+import { isPro, quotaFor } from '../lib/gating.js';
 import {
   fetchQuoteWithViews,
   insertQuote,
@@ -37,9 +37,9 @@ async function handleQuoteError(res, fn) {
   }
 }
 
-export function listQuotes(req, res, ctx) {
+export async function listQuotes(req, res, ctx) {
   if (!requireUser(res, ctx)) return;
-  const rows = listQuoteRows(ctx.db, ctx.user.id);
+  const rows = await listQuoteRows(ctx.db, ctx.user.id);
   const quotes = rows.map((row) => ({
     id: row.id,
     title: row.title,
@@ -55,37 +55,37 @@ export function listQuotes(req, res, ctx) {
     valid_until: row.valid_until,
     views: row.views
   }));
-  sendJson(res, 200, { ok: true, data: { quotes, quota: quotaFor(ctx.db, ctx.user) } });
+  sendJson(res, 200, { ok: true, data: { quotes, quota: await quotaFor(ctx.db, ctx.user) } });
 }
 
 export async function createQuote(req, res, ctx) {
   if (!requireUser(res, ctx)) return;
   const body = await readJson(req);
-  await handleQuoteError(res, () => {
+  await handleQuoteError(res, async () => {
     const data = validateQuoteBody(body);
-    const row = insertQuote(ctx.db, ctx.user, data);
+    const row = await insertQuote(ctx.db, ctx.user, data);
     const { quote, totals } = quoteRowToFull(row);
     sendJson(res, 201, { ok: true, data: { quote: { ...quote, totals } } });
   });
 }
 
-export function getQuote(req, res, ctx, params) {
+export async function getQuote(req, res, ctx, params) {
   if (!requireUser(res, ctx)) return;
   const id = parseId(params);
-  const row = id ? fetchQuoteWithViews(ctx.db, id, ctx.user.id) : null;
+  const row = id ? await fetchQuoteWithViews(ctx.db, id, ctx.user.id) : null;
   if (!row) {
     sendError(res, 404, 'not_found', 'Quote not found');
     return;
   }
   const { quote, totals } = quoteRowToFull(row);
-  const events = ctx.user.plan === 'pro' ? listEvents(ctx.db, id) : null;
+  const events = isPro(ctx.user) ? await listEvents(ctx.db, id) : null;
   sendJson(res, 200, { ok: true, data: { quote: { ...quote, totals }, totals, events } });
 }
 
 export async function updateQuote(req, res, ctx, params) {
   if (!requireUser(res, ctx)) return;
   const id = parseId(params);
-  const row = id ? ctx.db.prepare('SELECT * FROM quotes WHERE id = ? AND user_id = ?').get(id, ctx.user.id) : null;
+  const row = id ? await ctx.db.get('SELECT * FROM quotes WHERE id = ? AND user_id = ?', id, ctx.user.id) : null;
   if (!row) {
     sendError(res, 404, 'not_found', 'Quote not found');
     return;
@@ -95,9 +95,9 @@ export async function updateQuote(req, res, ctx, params) {
     return;
   }
   const body = await readJson(req);
-  await handleQuoteError(res, () => {
+  await handleQuoteError(res, async () => {
     const data = validateQuoteBody(body);
-    const updated = updateQuoteRow(ctx.db, id, ctx.user.id, data);
+    const updated = await updateQuoteRow(ctx.db, id, ctx.user.id, data);
     if (!updated) {
       sendError(res, 409, 'not_draft', 'Only draft quotes can be edited');
       return;
@@ -107,10 +107,10 @@ export async function updateQuote(req, res, ctx, params) {
   });
 }
 
-export function deleteQuote(req, res, ctx, params) {
+export async function deleteQuote(req, res, ctx, params) {
   if (!requireUser(res, ctx)) return;
   const id = parseId(params);
-  const row = id ? ctx.db.prepare('SELECT * FROM quotes WHERE id = ? AND user_id = ?').get(id, ctx.user.id) : null;
+  const row = id ? await ctx.db.get('SELECT * FROM quotes WHERE id = ? AND user_id = ?', id, ctx.user.id) : null;
   if (!row) {
     sendError(res, 404, 'not_found', 'Quote not found');
     return;
@@ -119,21 +119,21 @@ export function deleteQuote(req, res, ctx, params) {
     sendError(res, 409, 'not_draft', 'Only draft quotes can be deleted');
     return;
   }
-  ctx.db.prepare('DELETE FROM quote_events WHERE quote_id = ?').run(id);
-  ctx.db.prepare('DELETE FROM quotes WHERE id = ?').run(id);
+  await ctx.db.run('DELETE FROM quote_events WHERE quote_id = ?', id);
+  await ctx.db.run('DELETE FROM quotes WHERE id = ?', id);
   sendJson(res, 200, { ok: true });
 }
 
-export function sendQuoteRoute(req, res, ctx, params) {
+export async function sendQuoteRoute(req, res, ctx, params) {
   if (!requireUser(res, ctx)) return;
   const id = parseId(params);
-  const row = id ? ctx.db.prepare('SELECT * FROM quotes WHERE id = ? AND user_id = ?').get(id, ctx.user.id) : null;
+  const row = id ? await ctx.db.get('SELECT * FROM quotes WHERE id = ? AND user_id = ?', id, ctx.user.id) : null;
   if (!row) {
     sendError(res, 404, 'not_found', 'Quote not found');
     return;
   }
   try {
-    const updated = sendQuote(ctx.db, row);
+    const updated = await sendQuote(ctx.db, row);
     const { quote, totals } = quoteRowToFull(updated);
     sendJson(res, 200, {
       ok: true,

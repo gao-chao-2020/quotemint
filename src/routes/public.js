@@ -9,8 +9,8 @@ function limited(req, res) {
   return true;
 }
 
-function lookup(res, ctx, params) {
-  const quote = fetchQuoteByToken(ctx.db, params.token);
+async function lookup(res, ctx, params) {
+  const quote = await fetchQuoteByToken(ctx.db, params.token);
   if (!quote) {
     sendError(res, 404, 'not_found', 'Quote not found');
     return null;
@@ -30,10 +30,10 @@ export async function acceptPublicQuote(req, res, ctx, params) {
     sendError(res, 400, 'not_agreed', 'You must agree to the quote terms');
     return;
   }
-  const quote = lookup(res, ctx, params);
+  const quote = await lookup(res, ctx, params);
   if (!quote) return;
   try {
-    const updated = acceptQuote(ctx.db, quote, name);
+    const updated = await acceptQuote(ctx.db, quote, name);
     sendJson(res, 200, {
       ok: true,
       data: { status: updated.status, accepted_name: updated.accepted_name, accepted_at: updated.accepted_at }
@@ -58,10 +58,10 @@ export async function declinePublicQuote(req, res, ctx, params) {
     }
     reason = body.reason.trim();
   }
-  const quote = lookup(res, ctx, params);
+  const quote = await lookup(res, ctx, params);
   if (!quote) return;
   try {
-    const updated = declineQuote(ctx.db, quote, reason);
+    const updated = await declineQuote(ctx.db, quote, reason);
     sendJson(res, 200, { ok: true, data: { status: updated.status } });
   } catch (err) {
     if (err instanceof QuoteError) {
