@@ -1,8 +1,9 @@
 import { createServer } from 'node:http';
 import { readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { openDb, resolveDataDir } from './lib/db.js';
+import { publicDir } from './lib/paths.js';
 import { SESSION_COOKIE, resolveSession } from './lib/auth.js';
 import { enforceCsrf, parseCookies, sendError, HttpError } from './lib/http.js';
 import * as authRoutes from './routes/auth.js';
@@ -23,7 +24,6 @@ if (process.env.NODE_ENV === 'production' && BASE_URL.startsWith('http://localho
     '[warn] NODE_ENV=production but BASE_URL points at localhost. Session cookies will not be Secure and quote links will be unreachable by clients. Set BASE_URL to the public https URL.'
   );
 }
-const PUBLIC_DIR = resolve(fileURLToPath(new URL('../public', import.meta.url)));
 const db = openDb(resolveDataDir());
 
 const MIME_TYPES = {
@@ -105,8 +105,9 @@ function serveStatic(req, res, pathname) {
   } catch {
     return false;
   }
-  const resolved = resolve(PUBLIC_DIR, `.${decoded}`);
-  if (resolved !== PUBLIC_DIR && !resolved.startsWith(PUBLIC_DIR + sep)) return false;
+  const publicRoot = publicDir();
+  const resolved = resolve(publicRoot, `.${decoded}`);
+  if (resolved !== publicRoot && !resolved.startsWith(publicRoot + sep)) return false;
   let stats;
   try {
     stats = statSync(resolved);
@@ -191,11 +192,14 @@ export async function handleRequest(req, res) {
   }
 }
 
-// import.meta.main needs Node >=24.2; pathToFileURL comparison covers 22.13+,
-// where the serverless runtimes import this module instead of executing it.
-const isMain =
-  import.meta.main ??
-  (process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false);
+// import.meta.main needs Node >=24.2; pathToFileURL comparison covers 22.13+.
+// A bundled CJS build (Lambda) has an empty import.meta, which must mean "not
+// main" so the function never opens a listening socket.
+const rawMetaUrl = import.meta.url;
+const metaUrl = typeof rawMetaUrl === 'string' && rawMetaUrl ? rawMetaUrl : '';
+const isMain = metaUrl
+  ? (import.meta.main ?? (process.argv[1] ? metaUrl === pathToFileURL(process.argv[1]).href : false))
+  : false;
 
 if (isMain) {
   createServer(handleRequest).listen(PORT, () => {

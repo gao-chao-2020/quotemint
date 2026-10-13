@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import {
   renderLanding,
   renderAuth,
@@ -14,8 +14,7 @@ import { isPro, quotaFor } from '../lib/gating.js';
 import { resolveLang, safeNext } from '../lib/lang.js';
 import { fetchQuoteByToken, listEvents, listQuoteRows, markViewed, quoteRowToFull } from '../lib/quotes.js';
 import { isConfigured, isDemoMode, providerName } from '../lib/billing.js';
-
-const ALIPAY_QR_PATH = fileURLToPath(new URL('../../public/alipay-qr.png', import.meta.url));
+import { publicDir } from '../lib/paths.js';
 
 function sendHtml(res, status, html) {
   res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -116,7 +115,7 @@ export function billingPage(req, res, ctx) {
       billingEnabled: isConfigured(),
       demoMode: isDemoMode(),
       providerName: providerName(),
-      alipayQr: existsSync(ALIPAY_QR_PATH),
+      alipayQr: existsSync(join(publicDir(), 'alipay-qr.png')),
       lang: resolveLang(req),
       path: req.url.split('?')[0]
     })
