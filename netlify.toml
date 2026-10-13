@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Ship the Alipay QR inside the function bundle: the Lambda filesystem does
+# not contain public/ otherwise, so the billing card's existsSync would never
+# see it. zisi copies includes at their repo-relative path; a missing file is
+# silently skipped, so this is safe before the owner drops the image.
+[functions]
+  included_files = ["public/alipay-qr.png"]
+
 # 200 rewrite (no force): existing files in public/ win, everything else
 # reaches the function with the original URL preserved.
 [[redirects]]

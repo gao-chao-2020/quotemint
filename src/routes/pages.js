@@ -107,6 +107,12 @@ export function billingPage(req, res, ctx) {
     redirect(res, '/login');
     return;
   }
+  // In Lambda, bundled includes land at publicDir()/alipay-qr.png (verified
+  // zisi 16.3.0); the second candidate hedges a one-level-deeper layout.
+  const alipayQr = [
+    join(publicDir(), 'alipay-qr.png'),
+    join(publicDir(), 'public', 'alipay-qr.png')
+  ].some((candidate) => existsSync(candidate));
   sendHtml(
     res,
     200,
@@ -115,7 +121,7 @@ export function billingPage(req, res, ctx) {
       billingEnabled: isConfigured(),
       demoMode: isDemoMode(),
       providerName: providerName(),
-      alipayQr: existsSync(join(publicDir(), 'alipay-qr.png')),
+      alipayQr,
       lang: resolveLang(req),
       path: req.url.split('?')[0]
     })
