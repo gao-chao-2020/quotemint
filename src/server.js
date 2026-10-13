@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { openDb, resolveDataDir } from './lib/db.js';
 import { SESSION_COOKIE, resolveSession } from './lib/auth.js';
 import { enforceCsrf, parseCookies, sendError, HttpError } from './lib/http.js';
@@ -127,7 +127,7 @@ async function resolveUser(req) {
   return (await db.get('SELECT * FROM users WHERE id = ?', userId)) || null;
 }
 
-const server = createServer(async (req, res) => {
+export async function handleRequest(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -189,8 +189,16 @@ const server = createServer(async (req, res) => {
     if (isApi) sendError(res, 500, 'internal_error', 'Something went wrong');
     else errorPage(req, res, 500, 'Something went wrong');
   }
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`QuoteMint listening on ${BASE_URL} (data: ${resolveDataDir()})`);
-});
+// import.meta.main needs Node >=24.2; pathToFileURL comparison covers 22.13+,
+// where the serverless runtimes import this module instead of executing it.
+const isMain =
+  import.meta.main ??
+  (process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false);
+
+if (isMain) {
+  createServer(handleRequest).listen(PORT, () => {
+    console.log(`QuoteMint listening on ${BASE_URL} (data: ${resolveDataDir()})`);
+  });
+}

@@ -98,6 +98,9 @@ export function clientIp(req) {
   return req.socket?.remoteAddress || 'unknown';
 }
 
+// In-memory per-process state: on Netlify Functions every warm instance keeps
+// its own counters, so effective limits are per-instance. Accepted v0 — move
+// to a shared store if abuse ever shows up.
 export function createRateLimiter({ windowMs, max }) {
   const hits = new Map();
   return {

@@ -1,7 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { DatabaseSync } from 'node:sqlite';
 
 export function resolveDataDir() {
   return resolve(process.env.DATA_DIR || './data');
@@ -189,21 +188,40 @@ function ensurePg() {
 }
 
 function openSqliteDb(dataDir) {
-  mkdirSync(dataDir, { recursive: true });
-  const db = new DatabaseSync(dbPathFor(dataDir));
-  db.exec('PRAGMA journal_mode = WAL;');
-  db.exec('PRAGMA foreign_keys = ON;');
-  db.exec(SQLITE_SCHEMA);
+  let openPromise = null;
+
+  // Lazy so the Postgres path (Netlify/Neon) never imports node:sqlite or
+  // touches the filesystem at module load.
+  function open() {
+    if (!openPromise) {
+      openPromise = (async () => {
+        const { DatabaseSync } = await import('node:sqlite');
+        mkdirSync(dataDir, { recursive: true });
+        const db = new DatabaseSync(dbPathFor(dataDir));
+        db.exec('PRAGMA journal_mode = WAL;');
+        db.exec('PRAGMA foreign_keys = ON;');
+        db.exec(SQLITE_SCHEMA);
+        return db;
+      })().catch((err) => {
+        openPromise = null;
+        throw err;
+      });
+    }
+    return openPromise;
+  }
 
   return {
     dialect: 'sqlite',
     async get(sql, ...params) {
+      const db = await open();
       return db.prepare(sql).get(...params);
     },
     async all(sql, ...params) {
+      const db = await open();
       return db.prepare(sql).all(...params);
     },
     async run(sql, ...params) {
+      const db = await open();
       const info = db.prepare(sql).run(...params);
       return { changes: Number(info.changes), lastInsertRowid: Number(info.lastInsertRowid) };
     },
@@ -211,6 +229,7 @@ function openSqliteDb(dataDir) {
     // calls resolve without I/O, so the awaited statements of one transaction
     // cannot be interleaved with another request's handler.
     async transaction(fn) {
+      const db = await open();
       db.exec('BEGIN IMMEDIATE');
       try {
         const result = await fn();
@@ -222,6 +241,9 @@ function openSqliteDb(dataDir) {
       }
     },
     async close() {
+      if (!openPromise) return;
+      const db = await openPromise;
+      openPromise = null;
       db.close();
     },
     isUniqueError(err) {
