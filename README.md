@@ -17,6 +17,19 @@
 
 > 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。
 
+## 文档导航（中文 / English 对照）
+
+| 文档 | 中文 | English |
+|---|---|---|
+| 项目说明 | README.md（本页） | [README.en.md](README.en.md) |
+| 运营操作手册（非技术向） | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
+| 建站经验与技能手册 | [docs/PLAYBOOK.md](docs/PLAYBOOK.md) | [docs/PLAYBOOK.en.md](docs/PLAYBOOK.en.md) |
+| 上线/运维检查清单 | [docs/LAUNCH.md](docs/LAUNCH.md) | [docs/LAUNCH.en.md](docs/LAUNCH.en.md) |
+| 接口契约（冻结） | [docs/API-CONTRACT.zh-CN.md](docs/API-CONTRACT.zh-CN.md) | [docs/API-CONTRACT.md](docs/API-CONTRACT.md) |
+| 上市与增长手册 | [marketing/LAUNCH.zh-CN.md](marketing/LAUNCH.zh-CN.md) | [marketing/LAUNCH.md](marketing/LAUNCH.md) |
+| 冷启动外联模板 | [marketing/OUTREACH.zh-CN.md](marketing/OUTREACH.zh-CN.md) | [marketing/OUTREACH.md](marketing/OUTREACH.md) |
+| 服务器路线存档 | [deploy/CLOUDFLARE-TUNNEL.zh-CN.md](deploy/CLOUDFLARE-TUNNEL.zh-CN.md) | [deploy/CLOUDFLARE-TUNNEL.md](deploy/CLOUDFLARE-TUNNEL.md) |
+
 ## 商业模式
 
 | 版本 | 价格 | 包含 |
@@ -137,6 +150,8 @@ marketing/           # 上线作战手册（渠道、文案、冷启动计划）
 docs/
   API-CONTRACT.md    # 冻结的接口契约
   LAUNCH.md          # 上线检查清单
+  PLAYBOOK.md        # 零成本建站经验与技能手册
+  OPERATIONS.md      # 运营操作说明（非技术向）
 ```
 
 ## 上线检查清单（精简版）

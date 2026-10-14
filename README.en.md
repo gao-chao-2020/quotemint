@@ -17,6 +17,19 @@ A complete product that is already live: marketing site, signup/login, quote edi
 
 > The self-hosted server playbook (Docker / systemd / Cloudflare Tunnel) is archived under `deploy/` for a future migration.
 
+## Documentation map (中文 / English)
+
+| Doc | 中文 | English |
+|---|---|---|
+| Project overview | [README.md](README.md) | README.en.md (this page) |
+| Operations manual (non-technical) | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
+| Build & launch playbook | [docs/PLAYBOOK.md](docs/PLAYBOOK.md) | [docs/PLAYBOOK.en.md](docs/PLAYBOOK.en.md) |
+| Launch / ops checklist | [docs/LAUNCH.md](docs/LAUNCH.md) | [docs/LAUNCH.en.md](docs/LAUNCH.en.md) |
+| API contract (frozen) | [docs/API-CONTRACT.zh-CN.md](docs/API-CONTRACT.zh-CN.md) | [docs/API-CONTRACT.md](docs/API-CONTRACT.md) |
+| Go-to-market plan | [marketing/LAUNCH.zh-CN.md](marketing/LAUNCH.zh-CN.md) | [marketing/LAUNCH.md](marketing/LAUNCH.md) |
+| Outreach templates | [marketing/OUTREACH.zh-CN.md](marketing/OUTREACH.zh-CN.md) | [marketing/OUTREACH.md](marketing/OUTREACH.md) |
+| Server-route archive | [deploy/CLOUDFLARE-TUNNEL.zh-CN.md](deploy/CLOUDFLARE-TUNNEL.zh-CN.md) | [deploy/CLOUDFLARE-TUNNEL.md](deploy/CLOUDFLARE-TUNNEL.md) |
+
 ## Business model
 
 | Plan | Price | Includes |
@@ -141,6 +154,8 @@ marketing/           # launch playbook (channels, copy, cold-start plan)
 docs/
   API-CONTRACT.md    # frozen interface contract
   LAUNCH.md          # launch checklist
+  PLAYBOOK.md        # zero-cost build & launch playbook
+  OPERATIONS.md      # operations manual (non-technical)
 ```
 
 ## Launch checklist (short)
