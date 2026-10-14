@@ -10,7 +10,7 @@
 # see it. zisi copies includes at their repo-relative path; a missing file is
 # silently skipped, so this is safe before the owner drops the image.
 [functions]
-  included_files = ["public/alipay-qr.png"]
+  included_files = ["public/alipay-qr.png", "src/assets/admin.js"]
 
 # 200 rewrite (no force): existing files in public/ win, everything else
 # reaches the function with the original URL preserved.

@@ -606,6 +606,25 @@ to { opacity: 1; transform: translateY(0); }
   .alipay-body { flex-direction: column; align-items: center; }
   .alipay-steps { padding-left: 18px; }
 }
+/* 25. Admin panel ---------------------------------------------------------- */
+.page-admin { background: var(--bg-soft); }
+.admin-main { max-width: var(--app-container); padding-top: 40px; padding-bottom: 80px; }
+.admin-head-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.admin-section { padding: 20px 22px; margin-bottom: 22px; }
+.admin-section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.admin-section-head .panel-title { margin-bottom: 0; }
+.admin-search { display: flex; align-items: center; gap: 8px; }
+.admin-search .input { width: 240px; max-width: 100%; }
+.admin-table { width: 100%; border-collapse: collapse; min-width: 860px; }
+.admin-table th { font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-500); text-align: left; padding: 4px 12px 10px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.admin-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--bg-mute); vertical-align: middle; font-size: 14px; color: var(--ink-700); }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table-audit { min-width: 560px; }
+.admin-col-email { overflow-wrap: anywhere; }
+.admin-row-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.admin-months { width: 76px; padding: 8px 10px; font-size: 13.5px; }
+.admin-empty { padding: 20px 0 6px; color: var(--ink-500); font-size: 14.5px; }
+#admin-status { margin-bottom: 16px; }
 /* 22. Print / motion ------------------------------------------------------- */
 @media print {
   @page { size: A4; margin: 14mm; }

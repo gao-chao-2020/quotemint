@@ -5,8 +5,10 @@ import { pathToFileURL } from 'node:url';
 import { openDb, resolveDataDir } from './lib/db.js';
 import { publicDir } from './lib/paths.js';
 import { SESSION_COOKIE, resolveSession } from './lib/auth.js';
+import { adminEnabled } from './lib/admin.js';
 import { enforceCsrf, parseCookies, sendError, HttpError } from './lib/http.js';
 import * as authRoutes from './routes/auth.js';
+import * as adminRoutes from './routes/admin.js';
 import * as quoteRoutes from './routes/quotes.js';
 import * as publicRoutes from './routes/public.js';
 import * as billingRoutes from './routes/billing.js';
@@ -90,7 +92,15 @@ const routes = [
   route('POST', '/api/billing/checkout', billingRoutes.checkout),
   route('POST', '/api/billing/demo-upgrade', billingRoutes.demoUpgrade),
   route('POST', '/webhooks/stripe', billingRoutes.stripeWebhook),
-  route('POST', '/webhooks/creem', billingRoutes.creemWebhook)
+  route('POST', '/webhooks/creem', billingRoutes.creemWebhook),
+  route('GET', '/admin', adminRoutes.dashboardPage),
+  route('GET', '/admin/admin.js', adminRoutes.clientJs),
+  route('GET', '/admin/login', adminRoutes.loginPage),
+  route('POST', '/admin/login', adminRoutes.login),
+  route('POST', '/admin/logout', adminRoutes.logout),
+  route('GET', '/admin/users', adminRoutes.usersPage),
+  route('POST', '/admin/grant', adminRoutes.grant),
+  route('POST', '/admin/revoke', adminRoutes.revoke)
 ];
 
 function health(req, res) {
@@ -141,10 +151,31 @@ export async function handleRequest(req, res) {
     pathname = req.url || '/';
   }
   const isApi = pathname.startsWith('/api/');
+  // Admin gate: without both env vars every /admin path is indistinguishable
+  // from a nonexistent route. Static serving decodes the path too, so encoded
+  // variants like /%61dmin.js must hit this same gate.
+  let isAdmin = pathname.toLowerCase().startsWith('/admin');
+  if (!isAdmin) {
+    try {
+      const normalized = decodeURIComponent(pathname)
+        .split('/')
+        .filter((segment) => segment && segment !== '.')
+        .join('/')
+        .toLowerCase();
+      isAdmin = normalized === 'admin' || normalized.startsWith('admin/') || normalized.startsWith('admin.');
+    } catch {
+      isAdmin = true; // undecodable path: keep it inside the gate (404 either way)
+    }
+  }
+
+  if (isAdmin && !adminEnabled()) {
+    notFoundPage(req, res);
+    return;
+  }
 
   try {
     const mutating = req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS';
-    if (mutating && isApi && !enforceCsrf(req, res)) return;
+    if (mutating && (isApi || isAdmin) && !enforceCsrf(req, res)) return;
 
     const ctx = {
       db,

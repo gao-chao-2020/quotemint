@@ -10,10 +10,11 @@ import dictEditor from './dict-editor.js';
 import dictBilling from './dict-billing.js';
 import dictQuote from './dict-quote.js';
 import dictLegal from './dict-legal.js';
+import dictAdmin from './dict-admin.js';
 
 export const LANGS = ['en', 'zh'];
 
-const PARTS = [dictCommon, dictLayout, dictLanding, dictAuth, dictDashboard, dictEditor, dictBilling, dictQuote, dictLegal];
+const PARTS = [dictCommon, dictLayout, dictLanding, dictAuth, dictDashboard, dictEditor, dictBilling, dictQuote, dictLegal, dictAdmin];
 
 const DICTS = { en: {}, zh: {} };
 for (const part of PARTS) {
@@ -92,6 +93,10 @@ const CLIENT_KEYS = [
   'qp.busy.decline',
   'qp.flash.accepted',
   'qp.flash.declined',
+  'admin.login.busy',
+  'admin.confirm_revoke',
+  'admin.busy.grant',
+  'admin.busy.revoke',
 ];
 
 export function clientStrings(lang) {

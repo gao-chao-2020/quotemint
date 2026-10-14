@@ -65,6 +65,13 @@ CREATE TABLE IF NOT EXISTS quote_events (
   meta TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_events_quote ON quote_events(quote_id);
+CREATE TABLE IF NOT EXISTS admin_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  at TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_email TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT ''
+);
 `;
 
 // Same columns as SQLite; timestamps stay TEXT ISO strings so both drivers
@@ -120,6 +127,13 @@ CREATE TABLE IF NOT EXISTS quote_events (
   meta TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_events_quote ON quote_events(quote_id);
+CREATE TABLE IF NOT EXISTS admin_events (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  at TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_email TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT ''
+);
 `;
 
 // Rewrites ? placeholders to $1..$n, skipping single-quoted string literals.
