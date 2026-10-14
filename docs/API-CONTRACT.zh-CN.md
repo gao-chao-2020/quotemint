@@ -295,3 +295,11 @@ renderError({status, message})
 - 法律页面（Creem 审核所需）：`GET /privacy` 和 `GET /terms` — 公开页面，通过 §16 词典实现双语，从网站页脚链接（两个页面外壳 + 公开报价单页脚，若改动不大）。前端负责模板 + 词典；后端在 pages.js 中接线路由。内容：诚实的标准 SaaS 隐私政策（账号邮箱、报价单数据、由 MoR 处理的支付、cookie：qm_session + lang）和服务条款（服务描述、可接受使用、通过提供商进行计费/退款、责任限制、管辖法律占位）。不得作出法律意见类声明；包含联系行 `support@quotemint.dpdns.org`。
 - 页脚/支持：每个页面外壳的页脚都显示 `support@quotemint.dpdns.org` 作为联系地址。
 - QA：creem 签名校验（有效/无效/容差）和事件映射的单元测试；集成测试：`POST /webhooks/creem` 坏签名 400，好签名的 checkout.completed 将已创建的用户升级，订阅取消则降级；提供商选择矩阵（creem / stripe / none）；`/privacy` 和 `/terms` 在两种语言下均渲染 200 且无原始用户输入（静态）。全量测试套件复跑通过（green）。
+
+## 18. 管理端（第 4 次迭代，2026-10-14）— 附录
+
+- **门控**：所有匹配 `/admin*` 的路径（先 decodeURIComponent 再转小写判断）在未同时配置 `ADMIN_PASSWORD_HASH` 与 `ADMIN_SESSION_SECRET` 时一律返回与不存在路由完全一致的 404。客户端脚本放在 `src/assets/admin.js`（**不在** `public/`——那里是静态优先），仅经同一门控下的 `GET /admin/admin.js` 下发。
+- **认证**：仅密码的 `POST /admin/login` `{password}`，复用现有 scrypt + 恒时比较 → 错误：401 `bad_password`；按 IP 限流 10 次 / 15 分钟 → 429。会话 Cookie `qm_admin=<expMs>.<hmacSha256(ADMIN_SESSION_SECRET,'v1:'+expMs)>` — HttpOnly、SameSite=Lax、`Path=/admin`、Max-Age 7 天、https/生产下 Secure。无状态（不落服务端存储，serverless 安全）。
+- **路由**：`GET /admin` 仪表盘（UTC 自然月统计：用户/报价总数与本月新增；最近 10 个用户；最近 10 条审计；未登录 → 302 `/admin/login`）；`GET /admin/login`；`POST /admin/logout`；`GET /admin/users?q=`（邮箱+姓名 LIKE 搜索，元字符转义，≤50 行）；`POST /admin/grant` `{email, months=12}` → `{ok:true,data:{renews_at}}`（叠加到有效续费日期；404 `user_not_found`；400 `invalid_months`）；`POST /admin/revoke` `{email}`。所有管理端变更路由执行 §5 CSRF；未登录的 JSON 请求 → 401 `not_authenticated`。
+- **审计**：每次开通/撤销都在与套餐更新同一事务内写入 `admin_events (id, at, action, target_email, detail)`。
+- **共享内核**：`grantPro`/`revokePro`（`src/lib/admin.js`）同时支撑面板与 `scripts/grant.js`（CLI 输出/退出码不变；由 `test/integration/cli-grant.test.js` 覆盖）。轮换 `ADMIN_SESSION_SECRET` 即可使全部管理端会话失效。

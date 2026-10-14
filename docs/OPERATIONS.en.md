@@ -8,20 +8,18 @@
 
 - **Website**: https://quotemint.dpdns.org (auto-deploy, automatic HTTPS; monthly fixed cost ¥0)
 - **Support email**: support@quotemint.dpdns.org — incoming mail is **auto-forwarded to your everyday QQ mailbox**; normally just check the QQ mailbox
-- **Payments**: Alipay payment QR code (shown on the site's billing page) → after receiving payment, run one activation command
+- **Payments**: Alipay payment QR code (shown on the site's billing page) → activate with one click in the admin panel after payment arrives
+- **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, stats, audit trail; admin password in `账号信息.md`)
 - **Keys**: the passwords all live in `账号信息.md` (locally on the computer + backed up in the private repository); don't share them
 
 ## 1. Receiving an Alipay Payment (the Most Common Task)
 
 1. You will first see a payment message in your mailbox (or in Alipay/WeChat); it states the payer's **registered email**.
 2. Verify: the amount ¥68 and the registered email in the message.
-3. **Activate**: easiest is to send the customer's registered email to Claude and say "activate". To do it yourself, open a terminal in the project folder and run:
-
-   ```
-   npm run grant <customer's registered email> 12
-   ```
-
-   (`12` = activate 12 months. Note: this defaults to the local demo database; activating a live user requires `DATABASE_URL` pointing at production — let Claude handle it.)
+3. **Activate** (either way):
+   - **Option 1 (recommended)**: open **https://quotemint.dpdns.org/admin** in a browser → enter the admin password (in `账号信息.md`) → search the customer's signup email → click "Grant Pro" (12 months by default). Works on any computer or phone.
+   - **Option 2**: send the customer's registered email to Claude and say "activate".
+   (Backup CLI: `npm run grant <email> 12` — requires `DATABASE_URL` pointing at production.)
 4. **Reply to the customer**: open https://exmail.qq.com → log in via WeChat QR scan → compose → switch the "From" to support@quotemint.dpdns.org → tell the customer "it's activated — just refresh the billing page".
 5. Don't want to handle it yourself: send the payment screenshot to Claude and say "activate this email" — done.
 
@@ -58,11 +56,12 @@
 | Forgot a platform password | Look in `账号信息.md` | Recover GitHub with the bound email; Netlify/Neon both use "one-click GitHub login" |
 | Strange charges / card-binding requests | **Stop first**, don't click anything | Ask Claude first to confirm whether it's phishing |
 
-## 7. Security Rules (Three)
+## 7. Security Rules (Four)
 
 1. Don't forward or screenshot `账号信息.md` to others; it is already backed up in the private repository (visible only to you).
 2. Whenever any platform asks to "transfer money / bind a bank card / pay for a subscription", ask Claude to confirm first.
-3. If you later have employees/helpers, migrate the passwords to a password manager (e.g. Bitwarden free tier) before sharing; Claude can help you migrate.
+3. The admin password lives only in `账号信息.md`; if you suspect a leak, have Claude rotate it (rotating immediately invalidates all logged-in admin sessions).
+4. If you later have employees/helpers, migrate the passwords to a password manager (e.g. Bitwarden free tier) before sharing; Claude can help you migrate.
 
 ## 8. Glossary
 
@@ -73,3 +72,4 @@
 | Pro activation (grant) | Upgrading a registered user to the paid version (run one command after receiving payment) |
 | Alias mailbox | support@ and your primary mailbox are "one key, two doors": when someone sends to support@, the mail lands in your mailbox |
 | Auto-forwarding | After the mailbox receives a message, it automatically sends a copy to your everyday QQ mailbox |
+| Admin panel (/admin) | Web management UI: grant/revoke Pro, search users, view stats — just open it in a browser, on any computer or phone |

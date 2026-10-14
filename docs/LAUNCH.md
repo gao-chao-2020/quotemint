@@ -41,6 +41,7 @@
 - [ ] 备份：数据库每日快照 —— 现生产为 Postgres（Neon 自带历史记录，付费档有 PITR）；自建 SQLite 时用 `sqlite3 /data/app.db ".backup /backup/app-$(date +%F).db"`（保留 14 天，异地存一份）
 - [ ] 监控：外部探活 `GET /healthz`（UptimeRobot 免费版即可）；查看进程日志有无 5xx
 - [x] 收件箱：support@quotemint.dpdns.org 已启用并自动转发到运营者QQ邮箱（2026-10-14 收发实测通过）
+- [x] 管理端 /admin 已上线（2026-10-14：开通/撤销 Pro、统计、审计；默认对外隐藏、需管理员密码）
 - [ ] 数据看板（SQL 直查即可）：
   - 注册数：`SELECT COUNT(*) FROM users;`
   - 关键漏斗（周）：注册 / 建首份报价 / 发出报价 / 被签收 / 升级

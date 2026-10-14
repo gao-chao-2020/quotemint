@@ -19,7 +19,7 @@
 | **Client** (the person receiving the quote) | **No registration at all** | Open the link to view the quote, accept by typing their name (or decline), print and save | ¥0 |
 | **Operator (founder)** | — | Take payments and activate Pro, reply to emails, run inspections | — |
 
-> There is **no "admin backend" login role** inside the product (deliberate design: an extremely simple product run by one person). Management entry points = the various platform dashboards + Claude (see §6).
+> The product has no backend for ordinary users; the operator has a separate **hidden admin panel `/admin`** (404 by default, password-protected — see §6).
 
 ## 3. Free vs Pro
 
@@ -54,13 +54,13 @@
 |---|---|---|
 | Receiving payment notices / client emails | **QQ Mail** (support@ auto-forwards here) | A daily glance |
 | Replying as support@ | exmail.qq.com, WeChat QR-code login | When there's something to do |
-| Activating Pro for a customer | Send the customer's signup email to Claude saying "activate"; or run `npm run grant <email> 12` yourself (note: by default it connects to the local demo database; to activate a production user, `DATABASE_URL` must point to production — handing it to Claude is the safest) | When a payment comes in |
+| Activating Pro for a customer | Open https://quotemint.dpdns.org/admin (admin password in `账号信息.md`) → search the email → click "Grant Pro"; or send the email to Claude | When a payment comes in |
 | Verifying payments | Alipay bill | When there's something to do |
 | Website / database usage | Netlify and Neon dashboards | Occasionally |
 | Domain renewal | DigitalPlat (expires 2027-10-13, free to renew) | Once a year |
 | Changing anything on the website | Tell Claude directly → push → auto-deployed in about 1 minute | Anytime |
 
-Day to day there are only two jobs: **read email + have Claude activate**. Detailed steps are in [OPERATIONS](OPERATIONS.en.md).
+Day to day there are only two jobs: **read email + activate in the admin panel** (fall back to Claude if the panel is unreachable). Detailed steps are in [OPERATIONS](OPERATIONS.en.md).
 
 ## 7. Data & security at a glance
 

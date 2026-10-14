@@ -41,6 +41,7 @@ Smoke path (browser or curl):
 - [ ] Backups: daily snapshot of the database — Postgres in production (Neon built-in history; PITR on paid tiers); SQLite when self-hosted (`sqlite3 /data/app.db ".backup /backup/app-$(date +%F).db"`, keep 14 days, one off-site copy)
 - [ ] Monitoring: external ping `GET /healthz` (UptimeRobot free tier is fine); watch logs for 5xx
 - [x] Inbox: support@quotemint.dpdns.org is live and auto-forwards to the operator's QQ mailbox (send + receive tested 2026-10-14)
+- [x] Admin panel /admin live (2026-10-14: Pro grant/revoke, stats, audit trail; hidden by default, password-protected)
 - [ ] Data board (SQL is enough):
   - Signups: `SELECT COUNT(*) FROM users;`
   - Key weekly funnel: signup / first quote created / quote sent / accepted / upgraded
