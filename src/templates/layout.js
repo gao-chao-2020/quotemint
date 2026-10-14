@@ -8,7 +8,7 @@ import { isPro } from '../lib/gating.js';
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const DEFAULT_BRAND = '#4F46E5';
 
-export const SUPPORT_EMAIL = 'support@quotemint.com';
+export const SUPPORT_EMAIL = 'support@quotemint.dpdns.org';
 
 export function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ESCAPES[ch]);

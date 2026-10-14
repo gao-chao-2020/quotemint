@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { api, assertOk, boot, signup } from './helpers.js';
 
 const PORT = 3241;
-const SUPPORT_EMAIL = 'support@quotemint.com';
+const SUPPORT_EMAIL = 'support@quotemint.dpdns.org';
 
 let server;
 
