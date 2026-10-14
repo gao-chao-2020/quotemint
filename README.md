@@ -13,7 +13,7 @@
 - **架构**：Netlify 免费版（Functions 适配层 `src/lib/serverless-adapter.js`）+ Neon Postgres（免费版）+ DigitalPlat 免费域名 dpdns.org —— 零固定成本；全部账号凭证与生产状态见本地 `账号信息.md`（不入 git）
 - **收款**：中国客户支付宝收款码 ¥68/年（账单页扫码付款 → 邮件 support@ → 运营者运行 `npm run grant <邮箱> 12` 开通）；海外 $9/月走 Creem/Stripe（适配器就绪、默认休眠，待申请商户后启用）
 - **客服邮箱**：support@quotemint.dpdns.org（腾讯企业微信邮箱；收到的邮件自动转发到运营者QQ邮箱）
-- **管理端**：https://quotemint.dpdns.org/admin （开通/撤销用户、统计、操作记录；默认隐藏需管理员密码；任何电脑/手机可用）
+- **管理端**：https://quotemint.dpdns.org/admin （开通/撤销用户、浏览报价单、统计、操作记录；默认隐藏需管理员密码；任何电脑/手机可用）
 - **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（150 项）
 
 > 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。

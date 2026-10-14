@@ -13,7 +13,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 - **Stack**: Netlify free tier (Functions adapter in `src/lib/serverless-adapter.js`) + Neon Postgres (free tier) + free domain dpdns.org (DigitalPlat) — zero fixed cost; all account credentials and production state live in the local `账号信息.md` (not committed to git)
 - **Payments**: China customers pay ¥68/year via the Alipay QR on the billing page (scan → email support@ → operator runs `npm run grant <email> 12`); overseas $9/month runs through Creem/Stripe (adapters ready, dormant until merchant accounts are approved)
 - **Support mailbox**: support@quotemint.dpdns.org (Tencent Exmail; inbound mail auto-forwards to the operator's QQ mailbox)
-- **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, stats, audit trail; hidden by default, password-protected; works on any computer or phone)
+- **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, browse quotes, stats, audit trail; hidden by default, password-protected; works on any computer or phone)
 - **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (150 tests)
 
 > The self-hosted server playbook (Docker / systemd / Cloudflare Tunnel) is archived under `deploy/` for a future migration.

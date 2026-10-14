@@ -9,7 +9,7 @@
 - **Website**: https://quotemint.dpdns.org (auto-deploy, automatic HTTPS; monthly fixed cost ¥0)
 - **Support email**: support@quotemint.dpdns.org — incoming mail is **auto-forwarded to your everyday QQ mailbox**; normally just check the QQ mailbox
 - **Payments**: Alipay payment QR code (shown on the site's billing page) → activate with one click in the admin panel after payment arrives
-- **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, stats, audit trail; admin password in `账号信息.md`)
+- **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, browse quotes, stats, audit trail; admin password in `账号信息.md`)
 - **Keys**: the passwords all live in `账号信息.md` (locally on the computer + backed up in the private repository); don't share them
 
 ## 1. Receiving an Alipay Payment (the Most Common Task)

@@ -72,9 +72,10 @@ function auditTable(events, lang) {
 </table></div>`;
 }
 
-function searchForm(q, lang, action = '/admin/users') {
+function searchForm(q, lang, action = '/admin/users', placeholderKey = 'admin.search.placeholder') {
+  const placeholder = esc(t(lang, placeholderKey));
   return `<form class="admin-search" method="get" action="${action}">
-<input class="input" type="search" name="q" value="${esc(q)}" maxlength="254" placeholder="${esc(t(lang, 'admin.search.placeholder'))}" aria-label="${esc(t(lang, 'admin.search.placeholder'))}">
+<input class="input" type="search" name="q" value="${esc(q)}" maxlength="254" placeholder="${placeholder}" aria-label="${placeholder}">
 <button type="submit" class="btn btn-secondary btn-sm">${esc(t(lang, 'admin.search.submit'))}</button>
 </form>`;
 }
@@ -253,7 +254,7 @@ ${adminNav(lang, path)}
 <section class="panel admin-section" aria-label="${esc(t(lang, 'admin.nav.quotes'))}">
 <div class="admin-section-head">
 <h2 class="panel-title">${esc(heading)}</h2>
-${searchForm(q, lang, '/admin/quotes')}
+${searchForm(q, lang, '/admin/quotes', 'admin.quotes.search_placeholder')}
 </div>
 ${quoteTable(quotes, lang)}
 </section>
