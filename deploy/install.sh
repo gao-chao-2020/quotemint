@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # QuoteMint server bootstrap for Ubuntu 22.04/24.04 (run once, as root).
+# QuoteMint 服务器初始化脚本（Ubuntu 22.04/24.04，以 root 运行一次）。存档：自建服务器路线已搁置；当前生产 = Netlify + Neon。
 # Installs Node 24, creates /opt/quotemint, and installs the quotemint systemd service.
+# 安装 Node 24、创建 /opt/quotemint、注册 quotemint systemd 服务。
 # Idempotent: safe to re-run (an existing .env is preserved).
+# 幂等：可安全重复运行（已有的 .env 不会被覆盖）。
 #
 # Usage: sudo bash deploy/install.sh
+# 用法：sudo bash deploy/install.sh
 
 set -euo pipefail
 

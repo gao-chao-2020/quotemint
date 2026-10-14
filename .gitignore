@@ -6,5 +6,6 @@ tmp-*
 .env
 账号信息.md
 .claude/
+ops-repo/
 *.log
 .DS_Store

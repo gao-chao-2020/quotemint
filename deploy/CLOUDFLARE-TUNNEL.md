@@ -1,5 +1,9 @@
 # QuoteMint via Cloudflare Tunnel
 
+> [中文](CLOUDFLARE-TUNNEL.zh-CN.md) | English
+
+> 存档（2026-10-14）：这是「免费试用服务器 + Cloudflare 隧道」备选路线的操作手册，该路线已搁置；当前生产走 Netlify + Neon Postgres（见 README「当前线上」）。将来若迁移回自有服务器，按本文档操作即可。
+
 Goal: https://quotemint.dpdns.org -> http://127.0.0.1:3000. No open inbound ports, no ICP filing.
 
 ## 1. Put the domain on Cloudflare (once)

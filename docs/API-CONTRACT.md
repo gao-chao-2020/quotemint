@@ -1,5 +1,7 @@
 # QuoteMint API Contract (v1)
 
+> [中文](API-CONTRACT.zh-CN.md) | English
+
 **FROZEN.** This document is the single source of truth for all interfaces. If you believe something must change, message the team lead — do NOT unilaterally edit this file or deviate from it.
 
 ## 0. Stack & Conventions

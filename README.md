@@ -1,9 +1,21 @@
 # QuoteMint
 
+> [English](README.en.md) | 中文
+
 > 面向自由职业者与小型工作室的报价单 SaaS：**发出报价 → 客户打开（你能看到）→ 在线签收**。
 > Send quotes your clients actually sign.
 
-一个可以直接部署上线的完整产品：营销页、注册登录、报价编辑器、客户签收页、订阅计费（Stripe）全部包含。
+一个已经上线运行的完整产品：营销页、注册登录、报价编辑器、客户签收页、订阅计费（Creem/Stripe 适配器 + 支付宝收款码）全部包含。
+
+## 当前线上（2026-10-14）
+
+- **生产地址**：https://quotemint.dpdns.org （品牌域名；备用 https://quotemint.netlify.app ）
+- **架构**：Netlify 免费版（Functions 适配层 `src/lib/serverless-adapter.js`）+ Neon Postgres（免费版）+ DigitalPlat 免费域名 dpdns.org —— 零固定成本；全部账号凭证与生产状态见本地 `账号信息.md`（不入 git）
+- **收款**：中国客户支付宝收款码 ¥68/年（账单页扫码付款 → 邮件 support@ → 运营者运行 `npm run grant <邮箱> 12` 开通）；海外 $9/月走 Creem/Stripe（适配器就绪、默认休眠，待申请商户后启用）
+- **客服邮箱**：support@quotemint.dpdns.org（腾讯企业微信邮箱；收到的邮件自动转发到运营者QQ邮箱）
+- **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（148 项）
+
+> 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。
 
 ## 商业模式
 
@@ -16,9 +28,9 @@
 
 ## 技术栈（刻意选择）
 
-- **Node.js ≥ 22.5（本机 24.x），零外部运行时依赖**：`node:http` + `node:sqlite` + `node:crypto` + `node:test`。
+- **Node.js ≥ 22.5（本机 24.x），近乎零依赖**：核心全部使用内置模块（`node:http` + `node:sqlite` + `node:crypto` + `node:test`）；唯一的包依赖（`pg`）仅在生产 Postgres 路径需要。
 - 前端为服务器端渲染 HTML + 原生 JS/CSS，无构建步骤、无 CDN 依赖、无 npm 安装。
-- 单进程 + 单 SQLite 文件 = 可以在任何 $5/月 VPS 或免费容器平台上运行。
+- 单进程 + 单数据库（本地 SQLite；生产经 `DATABASE_URL` 切到 Postgres）= 可以在任何 $5/月 VPS 或免费容器平台上运行。
 
 ## 快速开始
 

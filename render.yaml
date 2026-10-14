@@ -1,3 +1,5 @@
+# 存档：Render 路线已搁置（Render 免费档 2026 起强制绑定国际银行卡）。当前生产 = Netlify + Neon，见 README「当前线上」。
+# Archived: the Render route is parked (Render free tier requires an international card since 2026). Current production = Netlify + Neon; see README "Live in production".
 # Render Blueprint for QuoteMint (free tier): web service + external Neon Postgres.
 # Secrets (BASE_URL, DATABASE_URL, provider keys) are set in the Render dashboard (sync: false).
 services:

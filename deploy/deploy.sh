@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 # QuoteMint deploy (run from your dev machine, inside the repo checkout).
+# QuoteMint 部署脚本（在开发机的仓库目录内运行）。存档：自建服务器路线已搁置；当前生产 = Netlify + Neon。
 #
 # Usage: deploy/deploy.sh SERVER_HOST SERVER_USER [SSH_PORT]
+# 用法：deploy/deploy.sh 服务器地址 服务器用户 [SSH端口]
 #
 # Packs git HEAD (src, public, scripts, package.json) into a tarball, copies it
 # to the server, extracts it over /opt/quotemint/app (the server-side .env and
 # /opt/quotemint/data are never touched), runs npm install, restarts the
 # quotemint service, and waits for /healthz. Non-zero exit on any failure.
+# 打包 git HEAD 到压缩包 → 传到服务器 → 解压到 /opt/quotemint/app（不动服务器 .env 与数据目录）
+# → npm install → 重启服务 → 等待 /healthz 通过；任何一步失败则非零退出。
 #
 # Tip: set up SSH key auth once: ssh-copy-id -p PORT USER@HOST
+# 提示：先配一次 SSH 免密：ssh-copy-id -p 端口 用户@主机
 
 set -euo pipefail
 

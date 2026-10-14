@@ -1,5 +1,7 @@
 # QuoteMint — Outreach Templates
 
+> [中文](OUTREACH.zh-CN.md) | English
+
 Cold outreach rules (apply to every template below):
 - 10 hand-personalized messages per day maximum. Volume without personalization burns the channel and the brand.
 - Every template has exactly one CTA: try the free plan (3 quotes/month, no card needed).

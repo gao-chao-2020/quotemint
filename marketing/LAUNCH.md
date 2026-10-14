@@ -1,5 +1,7 @@
 # QuoteMint — Launch & Go-To-Market Plan
 
+> [中文](LAUNCH.zh-CN.md) | English
+
 Owner: Brand & Growth. Date: 2026-10-10.
 Scope: launch plan for a brand-new, zero-traffic, bootstrapped product. All targets are testable hypotheses, not predictions.
 
@@ -37,6 +39,7 @@ Scope: launch plan for a brand-new, zero-traffic, bootstrapped product. All targ
 - **Simplest tool:** one job — create a quote, send a link, track opens, get online acceptance. No pipeline/CRM/templates sprawl to learn.
 - **Free plan as distribution:** 3 quotes/month with "Powered by QuoteMint" badge = product-led acquisition; every sent quote exposes a new potential user.
 - **Upgrade triggers:** >3 quotes/month, custom branding, view analytics. These map to "I'm making money with this" moments, not vanity features.
+- **China pricing (live 2026-10-14):** ¥68/year via Alipay QR on the billing page (manual activation, no card infrastructure needed). Deliberately decoupled from the USD motion; revisit automation when volume justifies it.
 
 ## 3. Launch channels (ranked by effort/impact)
 
@@ -220,21 +223,18 @@ All numbers are hypotheses to validate, not forecasts. One decision gate per wee
 
 Also track weekly (one number each, no dashboards): quotes sent per active user, time-to-first-quote from signup, 7-day return rate. These reveal whether the core loop repeats, which no single funnel stage shows.
 
-## 6. Domain / handle verification — DO THIS BEFORE LAUNCH
+## 6. Domain / handle verification
 
-Name collision check (done 2026-10-10): a web search for the exact name found no quote-software product called QuoteMint. Only hits are the `quoteMint` function name in blockchain SDKs (Sui DeepBook, pump.fun swap SDK) — a developer identifier, different category, no brand collision. No fallback needed on category grounds; domain availability still must be verified.
+Name collision check (done 2026-10-10): a web search for the exact name found no quote-software product called QuoteMint. Only hits are the `quoteMint` function name in blockchain SDKs (Sui DeepBook, pump.fun swap SDK) — a developer identifier, different category, no brand collision.
 
-Probe results 2026-10-10 (curl, from this machine; inconclusive — confirm at a registrar):
-- quotemint.com — no response (likely unregistered; verify)
-- quotemint.app — server responded HTTP 404 (domain is registered/parked by a third party; do not count on it)
-- quotemint.io — no response (likely unregistered; verify)
+**Resolution (2026-10-14):** launched on the free brand domain **quotemint.dpdns.org** (DigitalPlat). Zero-budget constraint — quotemint.com/.io were not purchased; buy quotemint.com from revenue later and keep the subdomain as a redirect.
 
-Checklist (all "verify before launch"):
-- [ ] quotemint.com availability and price at a registrar (primary choice)
-- [ ] quotemint.io and quotemint.co as alternates; getquotemint.com as fallback domain
-- [ ] Register the chosen domain and immediately register handles: @quotemint on X, GitHub, Product Hunt, LinkedIn, Instagram, YouTube — first-come, prevents squatting
-- [ ] Informal trademark scan: USPTO TESS, EUIPO, and a plain Google search for "QuoteMint" marks (verify); not legal advice — consult counsel before significant brand spend
-- [ ] Create support@ and hello@ addresses on the chosen domain
+Checklist (updated 2026-10-14):
+- [x] Domain live: quotemint.dpdns.org — HTTPS on, www redirects to apex
+- [x] support@quotemint.dpdns.org live (Tencent Exmail alias; auto-forwards to the owner's QQ mailbox — send+receive tested 2026-10-14)
+- [ ] Register brand handles (still open): @quotemint on X, GitHub, Product Hunt, LinkedIn, Instagram, YouTube — first-come, prevents squatting (current GitHub account: gao-chao-2020)
+- [ ] Later, from revenue: buy quotemint.com, keep the subdomain as a redirect
+- [ ] Informal trademark scan: USPTO TESS, EUIPO, plain Google for "QuoteMint" marks (verify); not legal advice — consult counsel before significant brand spend
 
 Fallback names (only if domains are unavailable or a trademark conflict appears):
 1. **MintQuote** — same two words reversed; keeps any "mint" equity; same clean collision profile (verify domains and handles).

@@ -1,14 +1,18 @@
 # QuoteMint 上线检查清单（运维/产品向）
 
+> [English](LAUNCH.en.md) | 中文
+
 > 增长渠道与冷启动计划见 [../marketing/LAUNCH.md](../marketing/LAUNCH.md)。
+
+> **现状（2026-10-14）：产品已上线** —— https://quotemint.dpdns.org（Netlify + Neon Postgres；收款 = 支付宝收款码 ¥68/年；客服邮箱 support@quotemint.dpdns.org 已启用并自动转发到QQ邮箱）。本清单写于「云服务器」部署路线时期：A 节中的域名/服务器/Stripe 项已被上述方案取代；B 节冒烟、C 节运营、D 节边界仍然适用。
 
 ## A. 部署前（一次配置）
 
-- [ ] 注册域名（候选：quotemint.app / quotemint.io / quotemint.com，顺便把 X/GitHub 同名 handle 占掉）
+- [x] 域名：quotemint.dpdns.org 已启用（DigitalPlat 免费域名，2026-10-13；社交平台同名 handle 待注册，见 marketing/LAUNCH.md §6）
 - [ ] 服务器/平台就绪：任意 1 vCPU / 512MB 内存即可；Docker 方式见 README
 - [ ] `.env` 生产值：`BASE_URL=https://<域名>`、`NODE_ENV=production`、`DEMO_MODE=false`
 - [ ] HTTPS 证书（Caddy 自动签发最省事：`your-domain.com { reverse_proxy localhost:3000 }`）
-- [ ] Stripe Live 模式：
+- [ ] （已被支付宝收款码方案取代；仅当将来启用 Creem/Stripe 商户时执行）Stripe Live 模式：
   - [ ] Product + 两个 Price（$9/月、$90/年）
   - [ ] `STRIPE_SECRET_KEY`（sk_live_…）、`STRIPE_PRICE_ID`（月付 Price）
   - [ ] Webhook 指向 `https://<域名>/webhooks/stripe`，订阅 `checkout.session.completed`、`customer.subscription.deleted`
@@ -34,17 +38,17 @@
 
 ## C. 运营（上线后）
 
-- [ ] 备份：cron 每日 `sqlite3 /data/app.db ".backup /backup/app-$(date +%F).db"`，保留 14 天，异地存一份
+- [ ] 备份：数据库每日快照 —— 现生产为 Postgres（Neon 自带历史记录，付费档有 PITR）；自建 SQLite 时用 `sqlite3 /data/app.db ".backup /backup/app-$(date +%F).db"`（保留 14 天，异地存一份）
 - [ ] 监控：外部探活 `GET /healthz`（UptimeRobot 免费版即可）；查看进程日志有无 5xx
-- [ ] 收件箱：域名邮箱（如 hello@）转发到常用邮箱，用于反馈与 support
+- [x] 收件箱：support@quotemint.dpdns.org 已启用并自动转发到运营者QQ邮箱（2026-10-14 收发实测通过）
 - [ ] 数据看板（SQL 直查即可）：
   - 注册数：`SELECT COUNT(*) FROM users;`
   - 关键漏斗（周）：注册 / 建首份报价 / 发出报价 / 被签收 / 升级
 - [ ] 每周一次：跑第 B 节冒烟 + 检查 Stripe 是否有争议/失败扣款
-- [ ] 安全：每季度 `npm start` 确认版本无告警；关注 Node LTS 升级；密钥只存服务器 `.env`（600 权限）
+- [ ] 安全：每季度 `npm start` 确认版本无告警；关注 Node LTS 升级；密钥只存平台环境变量（现生产为 Netlify 环境变量），绝不入库
 
 ## D. 已知边界（v1 明确不做）
 
 - 不发邮件：发送 = 复制链接，由用户在自有渠道（邮件/微信/WhatsApp）发出（v1.1 可加 SMTP/Resend）
 - 不做发票、不多币种换算、不接签名证书（typed-name 签收）
-- 单机 SQLite：日活 < 数千无压力；量级上来后迁移 Postgres（数据模型已兼容）
+- 单节点数据库：日活数千以内无压力；量级上来后扩容（数据模型已兼容 SQLite/Postgres 双驱动）
