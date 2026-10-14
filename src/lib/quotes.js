@@ -263,14 +263,17 @@ export async function acceptQuote(db, row, name) {
     throw new QuoteError(404, 'not_found', 'Quote not found');
   }
   const now = new Date().toISOString();
-  await db.run(
-    'UPDATE quotes SET status = ?, accepted_at = ?, accepted_name = ?, updated_at = ? WHERE id = ?',
+  const info = await db.run(
+    `UPDATE quotes SET status = ?, accepted_at = ?, accepted_name = ?, updated_at = ?
+     WHERE id = ? AND status IN ('sent', 'viewed')`,
     'accepted',
     now,
     name,
     now,
     row.id
   );
+  // Lost the race against a concurrent finalize: the other request already made it final.
+  if (info.changes === 0) throw new QuoteError(409, 'already_final', 'Quote is already final');
   await recordEvent(db, row.id, 'accept');
   return db.get('SELECT * FROM quotes WHERE id = ?', row.id);
 }
@@ -283,7 +286,16 @@ export async function declineQuote(db, row, reason = '') {
     throw new QuoteError(404, 'not_found', 'Quote not found');
   }
   const now = new Date().toISOString();
-  await db.run('UPDATE quotes SET status = ?, declined_at = ?, updated_at = ? WHERE id = ?', 'declined', now, now, row.id);
+  const info = await db.run(
+    `UPDATE quotes SET status = ?, declined_at = ?, updated_at = ?
+     WHERE id = ? AND status IN ('sent', 'viewed')`,
+    'declined',
+    now,
+    now,
+    row.id
+  );
+  // Lost the race against a concurrent finalize: the other request already made it final.
+  if (info.changes === 0) throw new QuoteError(409, 'already_final', 'Quote is already final');
   await recordEvent(db, row.id, 'decline', reason);
   return db.get('SELECT * FROM quotes WHERE id = ?', row.id);
 }

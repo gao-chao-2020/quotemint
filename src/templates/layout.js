@@ -84,9 +84,11 @@ export function sanitizeBrandColor(value) {
 }
 
 // The switcher's ?next= must survive the backend open-redirect guard: absolute paths only.
+// Mirror of safeNext() in src/lib/lang.js — keep the two in sync (control chars are URL-stripped).
 export function sanitizeNextPath(path) {
   const value = typeof path === 'string' ? path : '';
   if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
+  if (/[\u0000-\u0020\u007F]/.test(value)) return '/';
   return value;
 }
 

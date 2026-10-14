@@ -31,5 +31,7 @@ export function resolveLang(req) {
 export function safeNext(next) {
   if (typeof next !== 'string') return '/';
   if (!next.startsWith('/') || next.startsWith('//') || next.includes('\\')) return '/';
+  // URL parsers strip ASCII tab/newline, turning "/<TAB>/evil.com" into "//evil.com" (open redirect).
+  if (/[\u0000-\u0020\u007F]/.test(next)) return '/';
   return next;
 }

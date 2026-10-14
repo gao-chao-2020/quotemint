@@ -78,7 +78,8 @@ export function parseCookies(req) {
 }
 
 export function setSessionCookie(res, token, baseUrl) {
-  const secure = String(baseUrl || '').startsWith('https') ? '; Secure' : '';
+  const secure =
+    String(baseUrl || '').startsWith('https') || process.env.NODE_ENV === 'production' ? '; Secure' : '';
   res.setHeader('Set-Cookie', `qm_session=${token}; HttpOnly; SameSite=Lax; Path=/${secure}`);
 }
 
@@ -87,12 +88,15 @@ export function clearSessionCookie(res) {
 }
 
 export function clientIp(req) {
-  // XFF is client-forgeable; only honor it behind a trusted reverse proxy.
+  // XFF is client-forgeable; only honor it behind a trusted reverse proxy. The trusted
+  // proxy appends the peer it saw, so the RIGHTMOST entry is the trustworthy one
+  // (leftmost can be attacker-supplied when the proxy appends instead of overwriting).
   if (process.env.TRUST_PROXY === '1') {
     const forwarded = req.headers['x-forwarded-for'];
     if (typeof forwarded === 'string' && forwarded.length > 0) {
-      const first = forwarded.split(',')[0].trim();
-      if (first) return first;
+      const parts = forwarded.split(',');
+      const last = parts[parts.length - 1].trim();
+      if (last) return last;
     }
   }
   return req.socket?.remoteAddress || 'unknown';

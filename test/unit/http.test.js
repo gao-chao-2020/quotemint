@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { clientIp, parseCookies } from '../../src/lib/http.js';
+import { clientIp, parseCookies, setSessionCookie } from '../../src/lib/http.js';
 
 function req(headers = {}, remoteAddress = '10.0.0.1') {
   return { headers, socket: remoteAddress ? { remoteAddress } : null };
@@ -18,6 +18,18 @@ function withTrustProxy(value, fn) {
   }
 }
 
+function withEnv(key, value, fn) {
+  const saved = process.env[key];
+  if (value === undefined) delete process.env[key];
+  else process.env[key] = value;
+  try {
+    fn();
+  } finally {
+    if (saved === undefined) delete process.env[key];
+    else process.env[key] = saved;
+  }
+}
+
 test('clientIp ignores X-Forwarded-For unless TRUST_PROXY=1', () => {
   withTrustProxy(undefined, () => {
     assert.equal(clientIp(req({ 'x-forwarded-for': '1.2.3.4' })), '10.0.0.1');
@@ -30,11 +42,11 @@ test('clientIp ignores X-Forwarded-For unless TRUST_PROXY=1', () => {
   });
 });
 
-test('clientIp honors the first hop of X-Forwarded-For when TRUST_PROXY=1', () => {
+test('clientIp honors the last hop of X-Forwarded-For when TRUST_PROXY=1', () => {
   withTrustProxy('1', () => {
     assert.equal(clientIp(req({ 'x-forwarded-for': '1.2.3.4' })), '1.2.3.4');
-    assert.equal(clientIp(req({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8' })), '1.2.3.4');
-    assert.equal(clientIp(req({ 'x-forwarded-for': ' 1.2.3.4 , 5.6.7.8' })), '1.2.3.4');
+    assert.equal(clientIp(req({ 'x-forwarded-for': '6.6.6.6, 5.6.7.8' })), '5.6.7.8');
+    assert.equal(clientIp(req({ 'x-forwarded-for': ' 6.6.6.6 , 5.6.7.8 ' })), '5.6.7.8');
     assert.equal(clientIp(req({})), '10.0.0.1');
     assert.equal(clientIp(req({ 'x-forwarded-for': '' })), '10.0.0.1');
   });
@@ -43,6 +55,24 @@ test('clientIp honors the first hop of X-Forwarded-For when TRUST_PROXY=1', () =
 test('clientIp falls back to unknown when no socket address exists', () => {
   withTrustProxy(undefined, () => {
     assert.equal(clientIp(req({}, null)), 'unknown');
+  });
+});
+
+test('setSessionCookie always marks Secure in production', () => {
+  const makeRes = () => ({ header: '', setHeader(name, value) { this.header = value; } });
+
+  const local = makeRes();
+  setSessionCookie(local, 'tok', 'http://localhost:3000');
+  assert.equal(local.header.includes('; Secure'), false);
+
+  const https = makeRes();
+  setSessionCookie(https, 'tok', 'https://quotemint.dpdns.org');
+  assert.equal(https.header.includes('; Secure'), true);
+
+  withEnv('NODE_ENV', 'production', () => {
+    const prod = makeRes();
+    setSessionCookie(prod, 'tok', 'http://localhost:3000');
+    assert.equal(prod.header.includes('; Secure'), true);
   });
 });
 

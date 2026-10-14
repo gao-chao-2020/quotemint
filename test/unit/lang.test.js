@@ -59,6 +59,16 @@ test('safeNext rejects external, protocol-relative, and backslash targets', () =
   assert.equal(safeNext('app'), '/');
 });
 
+test('safeNext rejects control characters that URL parsers strip', () => {
+  const ctrl = (code) => `/${String.fromCharCode(code)}/evil.com`;
+  assert.equal(safeNext(ctrl(0x09)), '/'); // tab
+  assert.equal(safeNext(ctrl(0x0a)), '/'); // LF
+  assert.equal(safeNext(ctrl(0x0d)), '/'); // CR
+  assert.equal(safeNext(ctrl(0x00)), '/'); // NUL
+  assert.equal(safeNext('/a b'), '/'); // raw space
+  assert.equal(safeNext('/app/x%20y'), '/app/x%20y'); // percent-encoded space stays legal
+});
+
 test('safeNext falls back to / for empty and non-string input', () => {
   assert.equal(safeNext(''), '/');
   assert.equal(safeNext(undefined), '/');
