@@ -23,6 +23,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 |---|---|---|
 | Project overview | [README.md](README.md) | README.en.md (this page) |
 | Product & roles guide | [docs/USAGE.md](docs/USAGE.md) | [docs/USAGE.en.md](docs/USAGE.en.md) |
+| New-computer migration checklist | [docs/MIGRATION.md](docs/MIGRATION.md) | [docs/MIGRATION.en.md](docs/MIGRATION.en.md) |
 | Website architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/ARCHITECTURE.en.md](docs/ARCHITECTURE.en.md) |
 | Platform inventory | [docs/PLATFORMS.md](docs/PLATFORMS.md) | [docs/PLATFORMS.en.md](docs/PLATFORMS.en.md) |
 | Operations manual (non-technical) | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
@@ -159,6 +160,7 @@ docs/
   API-CONTRACT.md    # frozen interface contract
   LAUNCH.md          # launch checklist
   USAGE.md           # product & roles guide
+  MIGRATION.md       # new-computer migration checklist
   ARCHITECTURE.md    # website architecture overview
   PLATFORMS.md       # platform inventory (each explained)
   PLAYBOOK.md        # zero-cost build & launch playbook
