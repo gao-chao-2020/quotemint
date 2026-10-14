@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { api, assertErr, assertOk, boot, signup } from './helpers.js';
+import { api, assertErr, assertOk, boot, createQuote, sendQuote, signup } from './helpers.js';
 import { hashPassword } from '../../src/lib/auth.js';
 
 const PORT = 3228;
@@ -60,7 +60,7 @@ after(async () => {
 test('gate off: /admin paths are a byte-identical 404 to a nonexistent route', async () => {
   const control = await api(off, 'GET', '/definitely-not-a-route');
   assert.equal(control.status, 404);
-  for (const path of ['/admin', '/admin/login', '/admin/users?q=x', '/admin.js', '/admin/admin.js', '/%61dmin.js', '/.%2fadmin.js']) {
+  for (const path of ['/admin', '/admin/login', '/admin/users?q=x', '/admin/quotes?q=x', '/admin.js', '/admin/admin.js', '/%61dmin.js', '/.%2fadmin.js']) {
     const res = await api(off, 'GET', path);
     assert.equal(res.status, 404, `${path} must 404 when unconfigured`);
     assert.equal(res.text, control.text, `${path} must be indistinguishable from a nonexistent route`);
@@ -216,6 +216,27 @@ test('login rate limit: 10 attempts per IP per window, then 429', async () => {
     assertErr(await api(server, 'POST', '/admin/login', { headers, body: { password: 'wrong-password' } }), 401, 'bad_password');
   }
   assertErr(await api(server, 'POST', '/admin/login', { headers, body: { password: ADMIN_PASSWORD } }), 429, 'rate_limited');
+});
+
+test('admin quotes page lists quotes with owner email, search, and public link', async () => {
+  const created = assertOk(await createQuote(server, user.cookie, { title: 'Admin Quote Check' }), 201);
+  assertOk(await sendQuote(server, user.cookie, created.quote.id));
+
+  const unauth = await api(server, 'GET', '/admin/quotes');
+  assert.equal(unauth.status, 302);
+  assert.equal(unauth.location, '/admin/login');
+
+  const list = await api(server, 'GET', '/admin/quotes', { cookie: adminCookie });
+  assert.equal(list.status, 200, list.text);
+  assert.ok(list.text.includes('Admin Quote Check'));
+  assert.ok(list.text.includes(user.email), 'owner email column expected');
+  assert.ok(list.text.includes(`/q/${created.quote.public_token}`), 'public view link expected');
+
+  const hit = await api(server, 'GET', '/admin/quotes?q=Admin+Quote', { cookie: adminCookie });
+  assert.ok(hit.text.includes('Admin Quote Check'));
+
+  const miss = await api(server, 'GET', '/admin/quotes?q=zzz-nothing-matches', { cookie: adminCookie });
+  assert.ok(!miss.text.includes('Admin Quote Check'));
 });
 
 test('logout clears the admin cookie', async () => {

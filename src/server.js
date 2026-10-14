@@ -99,6 +99,7 @@ const routes = [
   route('POST', '/admin/login', adminRoutes.login),
   route('POST', '/admin/logout', adminRoutes.logout),
   route('GET', '/admin/users', adminRoutes.usersPage),
+  route('GET', '/admin/quotes', adminRoutes.quotesPage),
   route('POST', '/admin/grant', adminRoutes.grant),
   route('POST', '/admin/revoke', adminRoutes.revoke)
 ];

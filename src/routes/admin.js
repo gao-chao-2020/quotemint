@@ -15,7 +15,8 @@ import {
   verifyAdminPassword
 } from '../lib/admin.js';
 import { assetsDir } from '../lib/paths.js';
-import { renderAdminDashboard, renderAdminLogin, renderAdminUsers } from '../templates/index.js';
+import { quoteRowToFull } from '../lib/quotes.js';
+import { renderAdminDashboard, renderAdminLogin, renderAdminQuotes, renderAdminUsers } from '../templates/index.js';
 import { resolveLang } from '../lib/lang.js';
 
 const LOGIN_MAX_ATTEMPTS = 10;
@@ -148,6 +149,32 @@ export async function usersPage(req, res, ctx) {
   const q = queryParam(req, 'q').trim().slice(0, 254);
   const users = await searchUsers(ctx.db, q);
   sendHtml(res, 200, renderAdminUsers({ lang: resolveLang(req), path: '/admin/users', q, users }));
+}
+
+async function searchQuotes(db, q) {
+  const columns =
+    'q.id, q.title, q.client_name, q.status, q.currency, q.items, q.discount_pct, q.tax_pct, q.public_token, q.created_at, u.email AS owner_email';
+  const base = `SELECT ${columns} FROM quotes q JOIN users u ON u.id = q.user_id`;
+  const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
+  const op = db.dialect === 'postgres' ? 'ILIKE' : 'LIKE';
+  const rows = q
+    ? await db.all(
+        `${base} WHERE q.title ${op} ? ESCAPE '\\' OR q.client_name ${op} ? ESCAPE '\\' OR u.email ${op} ? ESCAPE '\\' ORDER BY q.id DESC LIMIT ?`,
+        like,
+        like,
+        like,
+        SEARCH_LIMIT
+      )
+    : await db.all(`${base} ORDER BY q.id DESC LIMIT ?`, SEARCH_LIMIT);
+  // total_cents is computed from items/discount/tax — same helper as the user dashboard.
+  return rows.map((row) => ({ ...row, total_cents: quoteRowToFull(row).totals.total_cents }));
+}
+
+export async function quotesPage(req, res, ctx) {
+  if (!requireAdminPage(req, res)) return;
+  const q = queryParam(req, 'q').trim().slice(0, 254);
+  const quotes = await searchQuotes(ctx.db, q);
+  sendHtml(res, 200, renderAdminQuotes({ lang: resolveLang(req), path: '/admin/quotes', q, quotes }));
 }
 
 export async function grant(req, res, ctx) {

@@ -7,5 +7,5 @@ export { renderEditor } from './editor.js';
 export { renderBilling } from './billing.js';
 export { renderPublicQuote } from './publicquote.js';
 export { renderLegal } from './legal.js';
-export { renderAdminDashboard, renderAdminLogin, renderAdminUsers } from './admin.js';
+export { renderAdminDashboard, renderAdminLogin, renderAdminQuotes, renderAdminUsers } from './admin.js';
 export { renderError } from './error.js';

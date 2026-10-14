@@ -2,7 +2,7 @@
 // Minimal standalone pages: layout({ nav: 'none' }) chrome + esc(); actions are
 // wired by src/assets/admin.js (served at /admin/admin.js; fetch + X-Requested-With).
 
-import { esc, formatDate, formatDateTime, icon, langSwitch, layout } from './layout.js';
+import { esc, formatDate, formatDateTime, formatMoney, icon, langSwitch, layout, statusPill } from './layout.js';
 import { t } from './i18n.js';
 
 function statCard(label, value, iconName) {
@@ -72,11 +72,48 @@ function auditTable(events, lang) {
 </table></div>`;
 }
 
-function searchForm(q, lang) {
-  return `<form class="admin-search" method="get" action="/admin/users">
+function searchForm(q, lang, action = '/admin/users') {
+  return `<form class="admin-search" method="get" action="${action}">
 <input class="input" type="search" name="q" value="${esc(q)}" maxlength="254" placeholder="${esc(t(lang, 'admin.search.placeholder'))}" aria-label="${esc(t(lang, 'admin.search.placeholder'))}">
 <button type="submit" class="btn btn-secondary btn-sm">${esc(t(lang, 'admin.search.submit'))}</button>
 </form>`;
+}
+
+function adminNav(lang, path) {
+  const link = (href, key, current) =>
+    `<a class="btn ${current ? 'btn-primary' : 'btn-secondary'} btn-sm" href="${href}"${current ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
+  const onUsers = path === '/admin' || path === '/admin/users';
+  return `<nav class="admin-nav">${link('/admin', 'admin.nav.users', onUsers)}${link('/admin/quotes', 'admin.nav.quotes', path === '/admin/quotes')}</nav>`;
+}
+
+function quoteRow(quote, lang) {
+  const token = String(quote.public_token || '');
+  return `<tr>
+<td>${esc(quote.title || '')}</td>
+<td>${esc(quote.client_name || '')}</td>
+<td class="admin-col-email">${esc(quote.owner_email || '')}</td>
+<td>${statusPill(quote.status, lang)}</td>
+<td>${esc(formatMoney(quote.total_cents, quote.currency || 'USD'))}</td>
+<td>${quote.created_at ? esc(formatDate(quote.created_at, lang)) : '—'}</td>
+<td>${token ? `<a class="btn btn-secondary btn-sm" href="/q/${esc(token)}" target="_blank" rel="noopener">${esc(t(lang, 'admin.quotes.view'))}</a>` : '—'}</td>
+</tr>`;
+}
+
+function quoteTable(quotes, lang) {
+  const rows = Array.isArray(quotes) ? quotes : [];
+  if (rows.length === 0) return `<p class="admin-empty">${esc(t(lang, 'admin.quotes.empty'))}</p>`;
+  return `<div class="table-scroll"><table class="admin-table">
+<thead><tr>
+<th>${esc(t(lang, 'admin.col.title'))}</th>
+<th>${esc(t(lang, 'admin.col.client'))}</th>
+<th>${esc(t(lang, 'admin.col.owner'))}</th>
+<th>${esc(t(lang, 'admin.col.status'))}</th>
+<th>${esc(t(lang, 'admin.col.total'))}</th>
+<th>${esc(t(lang, 'admin.col.created'))}</th>
+<th>${esc(t(lang, 'admin.quotes.view'))}</th>
+</tr></thead>
+<tbody>${rows.map((quote) => quoteRow(quote, lang)).join('')}</tbody>
+</table></div>`;
 }
 
 export function renderAdminLogin({ lang = 'en', path = '/admin/login' } = {}) {
@@ -124,6 +161,7 @@ ${langSwitch(lang, path)}
 </div>
 </div>
 <p class="form-error" id="admin-status" role="alert" hidden></p>
+${adminNav(lang, path)}
 <div class="stats">
 ${statCard(t(lang, 'admin.stat.users'), String(Number(stats.total_users) || 0), 'users')}
 ${statCard(t(lang, 'admin.stat.quotes'), String(Number(stats.total_quotes) || 0), 'file')}
@@ -173,12 +211,51 @@ ${langSwitch(lang, path)}
 </div>
 </div>
 <p class="form-error" id="admin-status" role="alert" hidden></p>
+${adminNav(lang, path)}
 <section class="panel admin-section" aria-label="${esc(t(lang, 'admin.users.title'))}">
 <div class="admin-section-head">
 <h2 class="panel-title">${esc(heading)}</h2>
 ${searchForm(q, lang)}
 </div>
 ${userTable(users, lang)}
+</section>
+</div>`;
+
+  return layout({
+    lang,
+    path,
+    title: t(lang, 'admin.meta.dashboard_title'),
+    description: '',
+    body,
+    nav: 'none',
+    bodyClass: 'page-admin',
+    scripts: ['/admin/admin.js'],
+    noindex: true,
+  });
+}
+
+export function renderAdminQuotes({ q = '', quotes = [], lang = 'en', path = '/admin/quotes' } = {}) {
+  const heading = q ? t(lang, 'admin.quotes.results', { q }) : t(lang, 'admin.quotes.latest');
+  const body = `
+<div class="container admin-main">
+<div class="page-head">
+<div>
+<h1 class="page-title">${esc(t(lang, 'admin.quotes.heading'))}</h1>
+<p class="page-sub">${esc(t(lang, 'admin.quotes.sub'))}</p>
+</div>
+<div class="admin-head-actions">
+${langSwitch(lang, path)}
+<a class="btn btn-secondary btn-sm" href="/admin">${esc(t(lang, 'admin.users.back'))}</a>
+</div>
+</div>
+<p class="form-error" id="admin-status" role="alert" hidden></p>
+${adminNav(lang, path)}
+<section class="panel admin-section" aria-label="${esc(t(lang, 'admin.nav.quotes'))}">
+<div class="admin-section-head">
+<h2 class="panel-title">${esc(heading)}</h2>
+${searchForm(q, lang, '/admin/quotes')}
+</div>
+${quoteTable(quotes, lang)}
 </section>
 </div>`;
 
