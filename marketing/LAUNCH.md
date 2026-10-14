@@ -232,7 +232,7 @@ Name collision check (done 2026-10-10): a web search for the exact name found no
 Checklist (updated 2026-10-14):
 - [x] Domain live: quotemint.dpdns.org — HTTPS on, www redirects to apex
 - [x] support@quotemint.dpdns.org live (Tencent Exmail alias; auto-forwards to the owner's QQ mailbox — send+receive tested 2026-10-14)
-- [ ] Register brand handles (still open): @quotemint on X, GitHub, Product Hunt, LinkedIn, Instagram, YouTube — first-come, prevents squatting (current GitHub account: gao-chao-2020)
+- [ ] Register brand handles (still open): @quotemint on X, GitHub, Product Hunt, LinkedIn, Instagram, YouTube — first-come, prevents squatting (a GitHub account is already set up — see the private credentials doc)
 - [ ] Later, from revenue: buy quotemint.com, keep the subdomain as a redirect
 - [ ] Informal trademark scan: USPTO TESS, EUIPO, plain Google for "QuoteMint" marks (verify); not legal advice — consult counsel before significant brand spend
 

@@ -40,7 +40,7 @@ Customer ──scan QR to pay──→ Alipay (you verify manually) ──→ gr
 ## Platforms in use (one by one)
 
 ### 1. GitHub — code hosting + deployment source
-- URL https://github.com | account: `gao-chao-2020`
+- URL https://github.com | account name in the private credentials doc
 - Two repos: **public** `quotemint` (all code and docs); **private** `quotemint-ops` (account credential backup, visible only to you)
 - After you push code, Netlify goes live automatically — it is the starting point of the whole deployment chain
 - Free unlimited private/public repos; SSH key already configured on this machine (passwordless push)

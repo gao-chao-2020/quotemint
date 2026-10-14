@@ -92,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_events_quote ON quote_events(quote_id);
 - 密码：使用 `scryptSync`，存储为 `scrypt$<saltHex>$<hashHex>`；用 `timingSafeEqual` 校验。最少 8 个字符，最多 200 个字符。
 - 邮箱：去除首尾空白并转小写；≤254 个字符；必须匹配 `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`。
 - 会话：原始 token = `crypto.randomBytes(32).toString('hex')`；数据库将 `sha256(token)` 的十六进制值存为 `sessions.id`。TTL 为 30 天。
-- Cookie：`qm_session=<token>; HttpOnly; SameSite=Lax; Path=/` + `; Secure`（仅当 `BASE_URL` 以 `https` 开头时）。
+- Cookie：`qm_session=<token>; HttpOnly; SameSite=Lax; Path=/` + `; Secure`（当 `BASE_URL` 以 `https` 开头，或 `NODE_ENV === 'production'` 时恒加）。
 - 使用未知邮箱和错误密码登录 → 返回完全相同的 `401 invalid_credentials`。
 
 路由：
@@ -116,7 +116,7 @@ CREATE INDEX IF NOT EXISTS idx_events_quote ON quote_events(quote_id);
 - `POST /api/auth/signup`、`POST /api/auth/login`：每 IP 每 15 分钟 20 次请求
 - `POST /api/public/quotes/:token/accept`、`.../decline`：每 IP 每 15 分钟 30 次请求
 
-超出限制 → `429 {code:'rate_limited'}`。客户端 IP：**仅当 `TRUST_PROXY=1`** 时取 `x-forwarded-for` 的第一个条目（只在你掌控的反向代理之后才设置）；否则使用 socket 地址。不可信的 XFF 绝不能生成新的限流键。
+超出限制 → `429 {code:'rate_limited'}`。客户端 IP：**仅当 `TRUST_PROXY=1`** 时取 `x-forwarded-for` 的最右侧条目（即可信代理追加的那一跳；最左条目可被攻击者伪造）；否则使用 socket 地址。不可信的 XFF 绝不能生成新的限流键。
 
 ## 5. CSRF 与 Origin 校验
 
@@ -178,7 +178,7 @@ draft --send--> sent --first public view--> viewed --accept--> accepted
 
 ## 10. 计费
 
-- `billingEnabled` = `STRIPE_SECRET_KEY` 与 `STRIPE_PRICE_ID` 均已设置。`demoMode` = `DEMO_MODE === 'true'`。
+- `billingEnabled` = `STRIPE_SECRET_KEY` 与 `STRIPE_PRICE_ID` 均已设置。（已被 §17 取代：提供商自动选择——配置了 Creem 密钥时优先。）`demoMode` = `DEMO_MODE === 'true'`。
 - **启动守卫**：如果 `NODE_ENV === 'production'` 且 `DEMO_MODE === 'true'` → 记录 fatal 日志并执行 `process.exit(1)`。
 
 | 方法与路径 | 说明 |
@@ -248,7 +248,7 @@ renderError({status, message})
 
 - `GET /healthz` → `200`、`text/plain`，响应体 `ok`。
 - 静态资源：`public/` 下的所有文件在 `/` 下提供（例如 `/styles.css`）。内容类型：html、css、js、mjs、svg、ico、png、jpg、webp、woff2、json、txt、xml。有路径穿越防护（解析后的路径必须位于 public/ 内）。`index.html` **不会**在 `/` 下自动提供。
-- 每个响应都带安全头：`X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、`X-Frame-Options: DENY`。
+- 每个响应都带安全头：`X-Content-Type-Options: nosniff`、`Referrer-Policy: strict-origin-when-cross-origin`、`X-Frame-Options: DENY`、`Strict-Transport-Security: max-age=31536000`。
 - 无 CORS 头（仅同源）。JSON 请求体限制 1MB → `413 payload_too_large`。
 - 未处理的路由/错误 → `/api/*` 返回 JSON 错误，其他情况返回 `renderError` 页面。不向客户端暴露堆栈跟踪；在服务端记录日志。
 

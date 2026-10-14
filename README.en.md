@@ -13,7 +13,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 - **Stack**: Netlify free tier (Functions adapter in `src/lib/serverless-adapter.js`) + Neon Postgres (free tier) + free domain dpdns.org (DigitalPlat) — zero fixed cost; all account credentials and production state live in the local `账号信息.md` (not committed to git)
 - **Payments**: China customers pay ¥68/year via the Alipay QR on the billing page (scan → email support@ → operator runs `npm run grant <email> 12`); overseas $9/month runs through Creem/Stripe (adapters ready, dormant until merchant accounts are approved)
 - **Support mailbox**: support@quotemint.dpdns.org (Tencent Exmail; inbound mail auto-forwards to the operator's QQ mailbox)
-- **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (148 tests)
+- **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (150 tests)
 
 > The self-hosted server playbook (Docker / systemd / Cloudflare Tunnel) is archived under `deploy/` for a future migration.
 
@@ -110,8 +110,9 @@ WantedBy=multi-user.target
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3000` | Listen port |
-| `BASE_URL` | `http://localhost:3000` | Public base URL; used to build client links and Stripe callbacks. **In production set the real https domain** (otherwise cookies are not Secure and startup prints a warning) |
+| `BASE_URL` | `http://localhost:3000` | Public base URL; used to build client links and payment callbacks. **In production set the real https domain** (production cookies are always Secure) |
 | `DATA_DIR` | `./data` | SQLite data directory |
+| `DATABASE_URL` | empty | Leave empty for local SQLite; set a Postgres URL to switch to a cloud database (Neon in production) |
 | `DEMO_MODE` | `false` | When `true`, shows the demo upgrade button and allows seeding; forced off under `NODE_ENV=production` (server refuses to boot otherwise) |
 | `TRUST_PROXY` | empty | Set to `1` behind a reverse proxy (Caddy/Nginx) so rate limiting uses the real client IP from `X-Forwarded-For` |
 | `CREEM_API_KEY` | — | Creem key; when set, billing goes through Creem (takes precedence) |

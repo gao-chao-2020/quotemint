@@ -92,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_events_quote ON quote_events(quote_id);
 - Password: `scryptSync`, stored as `scrypt$<saltHex>$<hashHex>`; verify with `timingSafeEqual`. Min 8 chars, max 200.
 - Email: trim + lowercase; ≤254 chars; must match `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`.
 - Session: raw token = `crypto.randomBytes(32).toString('hex')`; DB stores `sha256(token)` hex as `sessions.id`. TTL 30 days.
-- Cookie: `qm_session=<token>; HttpOnly; SameSite=Lax; Path=/` + `; Secure` iff `BASE_URL` starts with `https`.
+- Cookie: `qm_session=<token>; HttpOnly; SameSite=Lax; Path=/` + `; Secure` iff `BASE_URL` starts with `https` or `NODE_ENV === 'production'`.
 - Login with unknown email and wrong password → identical `401 invalid_credentials`.
 
 Routes:
@@ -116,7 +116,7 @@ In-memory sliding window per IP (fine for single process):
 - `POST /api/auth/signup`, `POST /api/auth/login`: 20 req / 15 min / IP
 - `POST /api/public/quotes/:token/accept`, `.../decline`: 30 req / 15 min / IP
 
-Exceeded → `429 {code:'rate_limited'}`. Client IP: first `x-forwarded-for` entry **only when `TRUST_PROXY=1`** (set behind a reverse proxy you control); otherwise the socket address. Untrusted XFF must never mint fresh rate-limit keys.
+Exceeded → `429 {code:'rate_limited'}`. Client IP: the rightmost `x-forwarded-for` entry (the hop our trusted proxy appended) **only when `TRUST_PROXY=1`**; otherwise the socket address. Untrusted XFF must never mint fresh rate-limit keys.
 
 ## 5. CSRF & Origin Check
 
@@ -178,7 +178,7 @@ Both mutating routes require the CSRF/origin rules from §5.
 
 ## 10. Billing
 
-- `billingEnabled` = `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` both set. `demoMode` = `DEMO_MODE === 'true'`.
+- `billingEnabled` = `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` both set. (Superseded by §17: the provider is auto-selected — Creem takes precedence when its keys are configured.) `demoMode` = `DEMO_MODE === 'true'`.
 - **Boot guard**: if `NODE_ENV === 'production'` and `DEMO_MODE === 'true'` → log fatal and `process.exit(1)`.
 
 | Method & path | Notes |
@@ -248,7 +248,7 @@ renderError({status, message})
 
 - `GET /healthz` → `200`, `text/plain`, body `ok`.
 - Static: all files under `public/` served at `/` (e.g. `/styles.css`). Content types: html, css, js, mjs, svg, ico, png, jpg, webp, woff2, json, txt, xml. Path traversal guarded (resolved path must stay inside public/). `index.html` is NOT auto-served at `/`.
-- Security headers on every response: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`.
+- Security headers on every response: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, `Strict-Transport-Security: max-age=31536000`.
 - No CORS headers (same-origin only). JSON body limit 1MB → `413 payload_too_large`.
 - Unhandled route/error → JSON error for `/api/*`, `renderError` page otherwise. No stack traces to clients; log server-side.
 

@@ -15,14 +15,13 @@
 
 1. You will first see a payment message in your mailbox (or in Alipay/WeChat); it states the payer's **registered email**.
 2. Verify: the amount ¥68 and the registered email in the message.
-3. **Activate**: open a terminal on your computer and run:
+3. **Activate**: easiest is to send the customer's registered email to Claude and say "activate". To do it yourself, open a terminal in the project folder and run:
 
    ```
-   cd D:\test\创业公司
-   npm run grant <客户的注册邮箱> 12
+   npm run grant <customer's registered email> 12
    ```
 
-   (`12` = activate 12 months. This command connects to the live production database; running it locally is fine.)
+   (`12` = activate 12 months. Note: this defaults to the local demo database; activating a live user requires `DATABASE_URL` pointing at production — let Claude handle it.)
 4. **Reply to the customer**: open https://exmail.qq.com → log in via WeChat QR scan → compose → switch the "From" to support@quotemint.dpdns.org → tell the customer "it's activated — just refresh the billing page".
 5. Don't want to handle it yourself: send the payment screenshot to Claude and say "activate this email" — done.
 

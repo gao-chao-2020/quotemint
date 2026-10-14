@@ -96,7 +96,7 @@ netlify/
 netlify.toml                       Platform config: publish=public, rewrite to the function, NODE_VERSION=22
 public/                            Static assets (styles, page scripts, favicon, Alipay payment QR code)
 scripts/seed.js                    Local demo data; scripts/grant.js = manual Pro activation (connects to the production DB)
-test/                              148 unit + integration tests (npm test)
+test/                              150 unit + integration tests (npm test)
 ```
 
 ## 6. Where the Data Lives ("Where Is My Data")

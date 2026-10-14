@@ -13,7 +13,7 @@
 - **架构**：Netlify 免费版（Functions 适配层 `src/lib/serverless-adapter.js`）+ Neon Postgres（免费版）+ DigitalPlat 免费域名 dpdns.org —— 零固定成本；全部账号凭证与生产状态见本地 `账号信息.md`（不入 git）
 - **收款**：中国客户支付宝收款码 ¥68/年（账单页扫码付款 → 邮件 support@ → 运营者运行 `npm run grant <邮箱> 12` 开通）；海外 $9/月走 Creem/Stripe（适配器就绪、默认休眠，待申请商户后启用）
 - **客服邮箱**：support@quotemint.dpdns.org（腾讯企业微信邮箱；收到的邮件自动转发到运营者QQ邮箱）
-- **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（148 项）
+- **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（150 项）
 
 > 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。
 
@@ -44,7 +44,7 @@
 ## 技术栈（刻意选择）
 
 - **Node.js ≥ 22.5（本机 24.x），近乎零依赖**：核心全部使用内置模块（`node:http` + `node:sqlite` + `node:crypto` + `node:test`）；唯一的包依赖（`pg`）仅在生产 Postgres 路径需要。
-- 前端为服务器端渲染 HTML + 原生 JS/CSS，无构建步骤、无 CDN 依赖、无 npm 安装。
+- 前端为服务器端渲染 HTML + 原生 JS/CSS，无构建步骤、无 CDN 依赖。
 - 单进程 + 单数据库（本地 SQLite；生产经 `DATABASE_URL` 切到 Postgres）= 可以在任何 $5/月 VPS 或免费容器平台上运行。
 
 ## 快速开始
@@ -110,8 +110,9 @@ WantedBy=multi-user.target
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `PORT` | `3000` | 监听端口 |
-| `BASE_URL` | `http://localhost:3000` | 对外地址，用于生成客户链接与 Stripe 回调。**生产环境必须设为 https 真实域名**（否则 Cookie 不会带 Secure，启动时会打印警告） |
+| `BASE_URL` | `http://localhost:3000` | 对外地址，用于生成客户链接与支付回调。**生产环境必须设为 https 真实域名**（生产环境 Cookie 恒带 Secure） |
 | `DATA_DIR` | `./data` | SQLite 数据目录 |
+| `DATABASE_URL` | 空 | 留空使用本地 SQLite；填 Postgres 连接串切换为云端数据库（生产为 Neon） |
 | `DEMO_MODE` | `false` | `true` 时显示演示升级按钮并允许 seed；生产环境（`NODE_ENV=production`）下强制关闭，否则拒绝启动 |
 | `TRUST_PROXY` | 空 | 反向代理（Caddy/Nginx）后面部署时设为 `1`，限流才会取用 `X-Forwarded-For` 真实客户端 IP |
 | `CREEM_API_KEY` | — | Creem 密钥；设置后计费走 Creem（优先） |
@@ -142,12 +143,16 @@ WantedBy=multi-user.target
 ```
 src/
   server.js          # HTTP 服务器、路由、静态文件、安全头
-  lib/               # db / auth / money / gating / quotes / stripe / http 工具
+  lib/               # db / auth / money / gating / quotes / stripe / creem / http 工具
   routes/            # auth / quotes / public / billing / pages 路由
   templates/         # 服务器端渲染页面（landing/auth/dashboard/editor/billing/quote）
+  lib/serverless-adapter.js  # 生产所用 Netlify Functions（Lambda）适配层
 public/              # 静态资源（styles.css、各页面 JS、favicon）
+netlify/functions/   # Netlify Functions 入口（适配层的薄包装）
+netlify.toml         # Netlify 构建/重定向配置
 test/                # unit + integration
 scripts/seed.js      # 演示数据
+scripts/grant.js     # 人工开通 Pro（支付宝收款后运行）
 marketing/           # 上线作战手册（渠道、文案、冷启动计划）
 docs/
   API-CONTRACT.md    # 冻结的接口契约
@@ -162,10 +167,10 @@ docs/
 
 完整版见 [docs/LAUNCH.md](docs/LAUNCH.md)：
 
-- [ ] 域名注册 + DNS 指向服务器，`BASE_URL` 改为 https 域名（Cookie 自动启用 Secure）
-- [ ] `.env` 中 `DEMO_MODE=false`、`NODE_ENV=production`
-- [ ] Stripe Live 密钥 + Webhook 配置完成，真实小额支付验证一次
-- [ ] 备份策略：`DATA_DIR/app.db` 每日快照（SQLite 单文件拷贝即可）
+- [x] 域名已上线 + DNS 已配置，`BASE_URL` 为 https 域名（生产环境 Cookie 恒带 Secure）
+- [x] `.env`/平台：`DEMO_MODE=false`、`NODE_ENV=production`
+- [x] 收款：支付宝收款码已上线（¥68/年，人工开通）；Creem/Stripe 待商户申请后启用
+- [ ] 备份：数据库每日快照（生产 Postgres 用 Neon 自带历史/付费档 PITR；SQLite 单文件拷贝即可）
 - [ ] 按 marketing/LAUNCH.md 执行首发渠道计划
 
 ## 安全设计

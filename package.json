@@ -17,6 +17,8 @@
     "test:unit": "node --no-warnings --test \"test/unit/*.test.js\"",
     "test:integration": "node --no-warnings --test \"test/integration/*.test.js\"",
     "seed": "node --no-warnings --env-file-if-exists=.env scripts/seed.js",
+    "grant": "node --no-warnings --env-file-if-exists=.env scripts/grant.js grant",
+    "revoke": "node --no-warnings --env-file-if-exists=.env scripts/grant.js revoke",
     "smoke:pg": "node --no-warnings --env-file-if-exists=.env scripts/smoke-pg.js"
   }
 }

@@ -2,14 +2,15 @@
 // Usage:
 //   node scripts/grant.js grant <email> [months]   Grant Pro (default 12 months; stacks onto an active renewal date)
 //   node scripts/grant.js revoke <email>           Revoke Pro and clear the renewal date
-// Runs against DATA_DIR (default ./data) — use the same DATA_DIR as your running server.
+// Runs against SQLite in DATA_DIR (default ./data); with DATABASE_URL set it targets Postgres
+// instead — that is how production (Neon) users are granted: DATABASE_URL=postgres://... npm run grant <email> 12
 
 import { openDb, resolveDataDir } from '../src/lib/db.js';
 
 const USAGE = `Usage:
   node scripts/grant.js grant <email> [months]   Grant Pro (default 12 months, stacks onto an active renewal date)
   node scripts/grant.js revoke <email>           Revoke Pro and clear the renewal date
-Runs against DATA_DIR (default ./data) — use the same DATA_DIR as your server (e.g. DATA_DIR=./data node scripts/grant.js grant user@example.com).`;
+Runs against DATA_DIR (default ./data) — use the same DATA_DIR as your server (e.g. DATA_DIR=./data node scripts/grant.js grant user@example.com). Set DATABASE_URL to target Postgres (production/Neon) instead.`;
 
 const [command, rawEmail, rawMonths] = process.argv.slice(2);
 const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';

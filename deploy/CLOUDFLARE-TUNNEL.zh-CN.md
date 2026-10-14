@@ -2,14 +2,12 @@
 
 > [English](CLOUDFLARE-TUNNEL.md) | 中文 · 参考译文；当前生产实际走 Netlify + Neon（见 README「当前线上」），本文档为将来迁移存档。
 
-> 存档（2026-10-14）：这是「免费试用服务器 + Cloudflare 隧道」备选路线的操作手册，该路线已搁置；当前生产走 Netlify + Neon Postgres（见 README「当前线上」）。将来若迁移回自有服务器，按本文档操作即可。
-
 目标：https://quotemint.dpdns.org -> http://127.0.0.1:3000。不开放任何入站端口，无需 ICP 备案。
 
 ## 1. 把域名接入 Cloudflare（一次性操作）
 
 1. dash.cloudflare.com -> Add a site -> 你的 dpdns.org 子域名（例如 quotemint.dpdns.org）-> Free plan。
-2. Cloudflare 会显示两个 nameserver。到 dash.domain.digitalplat.org，把该域名的 NS 记录设置为这两个。
+2. Cloudflare 会显示两个 nameserver。到 dashboard.digitalplat.org，把该域名的 NS 记录设置为这两个。
 3. 等待 zone 状态变为 Active（几分钟到几小时）。
 
 ## 2. 在服务器上安装 cloudflared（Cloudflare 官方软件源，中国大陆可访问）

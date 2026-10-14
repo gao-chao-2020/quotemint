@@ -272,7 +272,7 @@
 清单（2026-10-14 更新）：
 - [x] 域名已上线：quotemint.dpdns.org —— HTTPS 已开启，www 重定向到主域
 - [x] support@quotemint.dpdns.org 已启用（腾讯企业邮别名；自动转发到负责人的 QQ 邮箱 —— 收发已于 2026-10-14 测试）
-- [ ] 注册品牌账号名（仍待办）：X、GitHub、Product Hunt、LinkedIn、Instagram、YouTube 上的 @quotemint —— 先到先得，防止抢注（当前 GitHub 账号：gao-chao-2020）
+- [ ] 注册品牌账号名（仍待办）：X、GitHub、Product Hunt、LinkedIn、Instagram、YouTube 上的 @quotemint —— 先到先得，防止抢注（GitHub 账号已就绪，详见私有凭证文档）
 - [ ] 日后用收入：买下 quotemint.com，把子域名保留作重定向
 - [ ] 非正式商标排查：USPTO TESS、EUIPO、用 Google 普通搜索 “QuoteMint” 商标（verify，待核实）；不构成法律意见 —— 在品牌有大额投入之前咨询律师
 

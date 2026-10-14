@@ -72,7 +72,7 @@
 ## 5. Free Business Email Skills (Tencent WeCom Mail)
 
 - Setup path: register WeCom (WeChat QR scan) → "Mail" → submit the domain → add the DNS records as instructed → verification passes → create the mailbox.
-- Required records: MX `mxbiz1.qq.com` (priority 5), `mxbiz2.qq.com` (10); CNAME `qqmail<编号>` → `mail.qq.com`; SPF recommended: `v=spf1 include:spf.mail.qq.com ~all`.
+- Required records: MX `mxbiz1.qq.com` (priority 5), `mxbiz2.qq.com` (10); CNAME `qqmail<number>` → `mail.qq.com`; SPF recommended: `v=spf1 include:spf.mail.qq.com ~all`.
 - **Biggest limitation: one WeChat account can bind/activate only one business-mailbox account.** Once the admin's WeChat is bound to the primary mailbox, a standalone member mailbox cannot be activated.
 - **Adopted alternative: the mailbox alias.** Set support@ as an **alias** of the primary mailbox — customer mail goes straight into the primary mailbox; then enable "auto-forward" to send the mail on to your everyday mailbox. Day-to-day, "reading support@" = doing nothing.
 - Enabling auto-forward requires two verifications: **a WeChat QR scan** inside the mailbox + **clicking the confirmation link in the target mailbox** (both require a real person).
@@ -126,6 +126,6 @@
 
 ## 11. Key Timeline for This Project (Archived)
 
-- **2026-10-10**: Product complete (all 148 tests green, bilingual Chinese/English, security hardened).
+- **2026-10-10**: Product complete (all 148 tests green at the time; 150 now — bilingual Chinese/English, security hardened).
 - **2026-10-13**: Launched on Netlify + Neon; branded domain `quotemint.dpdns.org` live (HTTPS all green, www 301); full-chain e2e test passed.
 - **2026-10-14**: Alipay payment QR code live (¥68/year); support@ mailbox fully working (alias + QQ auto-forward, two-way send/receive tested); all documents bilingual; private ops repository `quotemint-ops` created.
