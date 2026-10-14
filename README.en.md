@@ -23,6 +23,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 |---|---|---|
 | Project overview | [README.md](README.md) | README.en.md (this page) |
 | Website architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/ARCHITECTURE.en.md](docs/ARCHITECTURE.en.md) |
+| Platform inventory | [docs/PLATFORMS.md](docs/PLATFORMS.md) | [docs/PLATFORMS.en.md](docs/PLATFORMS.en.md) |
 | Operations manual (non-technical) | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
 | Build & launch playbook | [docs/PLAYBOOK.md](docs/PLAYBOOK.md) | [docs/PLAYBOOK.en.md](docs/PLAYBOOK.en.md) |
 | Launch / ops checklist | [docs/LAUNCH.md](docs/LAUNCH.md) | [docs/LAUNCH.en.md](docs/LAUNCH.en.md) |
@@ -156,6 +157,7 @@ docs/
   API-CONTRACT.md    # frozen interface contract
   LAUNCH.md          # launch checklist
   ARCHITECTURE.md    # website architecture overview
+  PLATFORMS.md       # platform inventory (each explained)
   PLAYBOOK.md        # zero-cost build & launch playbook
   OPERATIONS.md      # operations manual (non-technical)
 ```
