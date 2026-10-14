@@ -22,6 +22,7 @@
 | 文档 | 中文 | English |
 |---|---|---|
 | 项目说明 | README.md（本页） | [README.en.md](README.en.md) |
+| 产品与角色说明（怎么用/谁在用/怎么管） | [docs/USAGE.md](docs/USAGE.md) | [docs/USAGE.en.md](docs/USAGE.en.md) |
 | 网站架构说明 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/ARCHITECTURE.en.md](docs/ARCHITECTURE.en.md) |
 | 平台清单（逐一说明） | [docs/PLATFORMS.md](docs/PLATFORMS.md) | [docs/PLATFORMS.en.md](docs/PLATFORMS.en.md) |
 | 运营操作手册（非技术向） | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
@@ -157,6 +158,7 @@ marketing/           # 上线作战手册（渠道、文案、冷启动计划）
 docs/
   API-CONTRACT.md    # 冻结的接口契约
   LAUNCH.md          # 上线检查清单
+  USAGE.md           # 产品与角色说明（怎么用/谁在用/怎么管）
   ARCHITECTURE.md    # 网站架构说明
   PLATFORMS.md       # 平台清单（逐一说明）
   PLAYBOOK.md        # 零成本建站经验与技能手册
