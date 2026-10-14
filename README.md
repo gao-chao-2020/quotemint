@@ -22,6 +22,7 @@
 | 文档 | 中文 | English |
 |---|---|---|
 | 项目说明 | README.md（本页） | [README.en.md](README.en.md) |
+| 网站架构说明 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/ARCHITECTURE.en.md](docs/ARCHITECTURE.en.md) |
 | 运营操作手册（非技术向） | [docs/OPERATIONS.md](docs/OPERATIONS.md) | [docs/OPERATIONS.en.md](docs/OPERATIONS.en.md) |
 | 建站经验与技能手册 | [docs/PLAYBOOK.md](docs/PLAYBOOK.md) | [docs/PLAYBOOK.en.md](docs/PLAYBOOK.en.md) |
 | 上线/运维检查清单 | [docs/LAUNCH.md](docs/LAUNCH.md) | [docs/LAUNCH.en.md](docs/LAUNCH.en.md) |
@@ -150,6 +151,7 @@ marketing/           # 上线作战手册（渠道、文案、冷启动计划）
 docs/
   API-CONTRACT.md    # 冻结的接口契约
   LAUNCH.md          # 上线检查清单
+  ARCHITECTURE.md    # 网站架构说明
   PLAYBOOK.md        # 零成本建站经验与技能手册
   OPERATIONS.md      # 运营操作说明（非技术向）
 ```
