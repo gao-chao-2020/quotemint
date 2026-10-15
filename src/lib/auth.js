@@ -2,6 +2,7 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypt
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const SESSION_COOKIE = 'qm_session';
+export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 export function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
@@ -57,6 +58,51 @@ export async function resolveSession(db, token) {
     return null;
   }
   return row.user_id;
+}
+
+// Only the sha256 of the raw token is stored, mirroring sessions. Any previous
+// unused token for the user is dropped so a leaked older link cannot compete.
+export async function createPasswordReset(db, userId) {
+  const token = randomBytes(32).toString('hex');
+  const now = new Date();
+  await db.transaction(async () => {
+    await db.run('DELETE FROM password_resets WHERE user_id = ? AND used_at IS NULL', userId);
+    await db.run(
+      'INSERT INTO password_resets (user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?)',
+      userId,
+      sha256Hex(token),
+      new Date(now.getTime() + PASSWORD_RESET_TTL_MS).toISOString(),
+      now.toISOString()
+    );
+  });
+  return token;
+}
+
+export async function resolvePasswordReset(db, rawToken) {
+  if (typeof rawToken !== 'string' || rawToken.length === 0 || rawToken.length > 200) return null;
+  const row = await db.get('SELECT * FROM password_resets WHERE token_hash = ?', sha256Hex(rawToken));
+  if (!row || row.used_at) return null;
+  if (new Date(row.expires_at).getTime() <= Date.now()) return null;
+  return row;
+}
+
+// Claims the token before touching the password (conditional update = atomic
+// single-use in both drivers), hashes the new password, and kills every
+// session of the user so all devices are forced to log in again.
+export async function consumePasswordReset(db, resetRow, newPassword) {
+  const passwordHash = hashPassword(newPassword);
+  const now = new Date().toISOString();
+  return db.transaction(async () => {
+    const claimed = await db.run(
+      'UPDATE password_resets SET used_at = ? WHERE id = ? AND used_at IS NULL',
+      now,
+      resetRow.id
+    );
+    if (claimed.changes !== 1) return false;
+    await db.run('UPDATE users SET password_hash = ? WHERE id = ?', passwordHash, resetRow.user_id);
+    await db.run('DELETE FROM sessions WHERE user_id = ?', resetRow.user_id);
+    return true;
+  });
 }
 
 export function publicUser(row) {

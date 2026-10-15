@@ -1,4 +1,5 @@
-// Dictionary part: login / signup pages and their client-side form handling.
+// Dictionary part: login / signup / forgot-password / reset-password pages and
+// their client-side form handling.
 
 export default {
   en: {
@@ -10,6 +11,7 @@ export default {
     'auth.label.name': 'Your name',
     'auth.label.email': 'Email',
     'auth.label.password': 'Password',
+    'auth.label.confirm_password': 'Confirm password',
     'auth.hint.password': '8+ characters',
 
     'auth.login.heading': 'Welcome back',
@@ -20,11 +22,32 @@ export default {
     'auth.signup.submit': 'Create account',
     'auth.login.switch': 'New to QuoteMint? <a href="/signup">Create an account</a>',
     'auth.signup.switch': 'Already have an account? <a href="/login">Log in</a>',
+    'auth.login.forgot': '<a href="/forgot">Forgot password?</a>',
+
+    'auth.forgot.title': 'Forgot password — QuoteMint',
+    'auth.forgot.description': 'Request a password reset link for your QuoteMint account.',
+    'auth.forgot.heading': 'Forgot your password?',
+    'auth.forgot.sub': "Enter your email and we'll send you a reset link.",
+    'auth.forgot.submit': 'Send reset link',
+    'auth.forgot.success': "If an account exists for that email, we've sent a reset link. It stays valid for 1 hour.",
+    'auth.forgot.switch': 'Remembered it? <a href="/login">Log in</a>',
+
+    'auth.reset.title': 'Reset your password — QuoteMint',
+    'auth.reset.description': 'Choose a new password for your QuoteMint account.',
+    'auth.reset.heading': 'Choose a new password',
+    'auth.reset.sub': 'Enter and confirm your new password below.',
+    'auth.reset.submit': 'Reset password',
+    'auth.reset.invalid': 'This reset link is invalid or has expired.',
+    'auth.reset.retry': 'Need a fresh link? <a href="/forgot">Request a new one</a>',
 
     'auth.err.enter_password': 'Enter your password.',
+    'auth.err.password_mismatch': 'Passwords do not match.',
     'auth.err.rate_limited': 'Too many attempts. Wait a minute and try again.',
+    'auth.reset.flash': 'Password updated — log in with your new password.',
     'auth.busy.signup': 'Creating account…',
     'auth.busy.login': 'Logging in…',
+    'auth.busy.forgot': 'Sending reset link…',
+    'auth.busy.reset': 'Resetting password…',
   },
   zh: {
     'auth.login.title': '登录 — QuoteMint',
@@ -35,6 +58,7 @@ export default {
     'auth.label.name': '你的姓名',
     'auth.label.email': '邮箱',
     'auth.label.password': '密码',
+    'auth.label.confirm_password': '确认密码',
     'auth.hint.password': '至少 8 个字符',
 
     'auth.login.heading': '欢迎回来',
@@ -45,10 +69,31 @@ export default {
     'auth.signup.submit': '创建账户',
     'auth.login.switch': '第一次来 QuoteMint？<a href="/signup">创建账户</a>',
     'auth.signup.switch': '已有账户？<a href="/login">立即登录</a>',
+    'auth.login.forgot': '<a href="/forgot">忘记密码？</a>',
+
+    'auth.forgot.title': '忘记密码 — QuoteMint',
+    'auth.forgot.description': '为你的 QuoteMint 账户申请密码重置链接。',
+    'auth.forgot.heading': '忘记密码了？',
+    'auth.forgot.sub': '输入你的邮箱，我们会发送重置链接给你。',
+    'auth.forgot.submit': '发送重置链接',
+    'auth.forgot.success': '如果该邮箱有账户，我们已发送重置链接。链接 1 小时内有效。',
+    'auth.forgot.switch': '想起来了？<a href="/login">立即登录</a>',
+
+    'auth.reset.title': '重置密码 — QuoteMint',
+    'auth.reset.description': '为你的 QuoteMint 账户设置新密码。',
+    'auth.reset.heading': '设置新密码',
+    'auth.reset.sub': '在下方输入并确认你的新密码。',
+    'auth.reset.submit': '重置密码',
+    'auth.reset.invalid': '此重置链接无效或已过期。',
+    'auth.reset.retry': '需要新的链接？<a href="/forgot">重新获取</a>',
 
     'auth.err.enter_password': '请输入密码。',
+    'auth.err.password_mismatch': '两次输入的密码不一致。',
     'auth.err.rate_limited': '尝试次数过多，请稍等一分钟再试。',
+    'auth.reset.flash': '密码已更新 —— 请用新密码登录。',
     'auth.busy.signup': '正在创建账户…',
     'auth.busy.login': '正在登录…',
+    'auth.busy.forgot': '正在发送重置链接…',
+    'auth.busy.reset': '正在重置密码…',
   },
 };

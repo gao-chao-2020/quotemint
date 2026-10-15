@@ -72,6 +72,16 @@ CREATE TABLE IF NOT EXISTS admin_events (
   target_email TEXT NOT NULL,
   detail TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
 `;
 
 // Same columns as SQLite; timestamps stay TEXT ISO strings so both drivers
@@ -134,6 +144,16 @@ CREATE TABLE IF NOT EXISTS admin_events (
   target_email TEXT NOT NULL,
   detail TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS password_resets (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
 `;
 
 // Rewrites ? placeholders to $1..$n, skipping single-quoted string literals.

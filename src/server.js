@@ -12,7 +12,7 @@ import * as adminRoutes from './routes/admin.js';
 import * as quoteRoutes from './routes/quotes.js';
 import * as publicRoutes from './routes/public.js';
 import * as billingRoutes from './routes/billing.js';
-import { authPage, billingPage, dashboardPage, editQuotePage, errorPage, landingPage, langRoute, newQuotePage, notFoundPage, privacyPage, publicQuotePage, termsPage } from './routes/pages.js';
+import { authPage, billingPage, dashboardPage, editQuotePage, errorPage, forgotPage, landingPage, langRoute, newQuotePage, notFoundPage, privacyPage, publicQuotePage, resetPage, termsPage } from './routes/pages.js';
 
 if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE === 'true') {
   console.error('[fatal] DEMO_MODE=true is not allowed when NODE_ENV=production');
@@ -68,6 +68,8 @@ const routes = [
   route('GET', '/healthz', health),
   route('GET', '/login', (req, res, ctx) => authPage(req, res, ctx, { mode: 'login' })),
   route('GET', '/signup', (req, res, ctx) => authPage(req, res, ctx, { mode: 'signup' })),
+  route('GET', '/forgot', forgotPage),
+  route('GET', '/reset', resetPage),
   route('GET', '/app', dashboardPage),
   route('GET', '/app/quotes/new', newQuotePage),
   route('GET', '/app/quotes/:id/edit', editQuotePage),
@@ -78,6 +80,8 @@ const routes = [
   route('GET', '/terms', termsPage),
   route('POST', '/api/auth/signup', authRoutes.signup),
   route('POST', '/api/auth/login', authRoutes.login),
+  route('POST', '/api/auth/forgot', authRoutes.forgotPassword),
+  route('POST', '/api/auth/reset', authRoutes.resetPassword),
   route('POST', '/api/auth/logout', authRoutes.logout),
   route('GET', '/api/auth/me', authRoutes.me),
   route('PUT', '/api/auth/profile', authRoutes.updateProfile),

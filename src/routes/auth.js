@@ -1,10 +1,12 @@
 import { createRateLimiter, readJson, sendError, sendJson, setSessionCookie, clearSessionCookie, clientIp, parseCookies } from '../lib/http.js';
-import { createSession, destroySession, hashPassword, publicUser, SESSION_COOKIE, verifyPassword } from '../lib/auth.js';
+import { consumePasswordReset, createPasswordReset, createSession, destroySession, hashPassword, publicUser, resolvePasswordReset, SESSION_COOKIE, verifyPassword } from '../lib/auth.js';
 import { isPro, quotaFor } from '../lib/gating.js';
+import { sendMail } from '../lib/mailer.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
+const forgotLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 });
 
 const DUMMY_PASSWORD_HASH = hashPassword('quotemint-dummy-timing-equalizer');
 
@@ -81,6 +83,71 @@ export async function login(req, res, ctx) {
   const token = await createSession(ctx.db, user.id);
   setSessionCookie(res, token, ctx.baseUrl);
   sendJson(res, 200, { ok: true, data: { user: publicUser(user) } });
+}
+
+function resetEmailText(baseUrl, token) {
+  const url = `${baseUrl}/reset?token=${token}`;
+  return [
+    'Reset your QuoteMint password',
+    '重置你的 QuoteMint 密码',
+    '',
+    'Open the link below to choose a new password. The link is valid for 1 hour:',
+    '打开以下链接设置新密码。链接 1 小时内有效：',
+    '',
+    url,
+    '',
+    "If you didn't request a password reset, you can safely ignore this email.",
+    '如果这不是你本人的操作，请忽略此邮件，你的密码不会被修改。'
+  ].join('\n');
+}
+
+// Always answers 200 {ok:true} so the response never reveals whether an
+// account exists; mail delivery problems are logged, not surfaced.
+export async function forgotPassword(req, res, ctx) {
+  if (!forgotLimiter.check(clientIp(req))) {
+    sendError(res, 429, 'rate_limited', 'Too many requests');
+    return;
+  }
+  const body = await readJson(req);
+  const email = normalizeEmail(body.email);
+  const user =
+    email && email.length <= 254 && EMAIL_RE.test(email)
+      ? await ctx.db.get('SELECT id, email FROM users WHERE email = ?', email)
+      : null;
+  if (user) {
+    const token = await createPasswordReset(ctx.db, user.id);
+    try {
+      await sendMail({
+        to: user.email,
+        subject: 'Reset your QuoteMint password / 重置密码',
+        text: resetEmailText(ctx.baseUrl, token)
+      });
+    } catch (err) {
+      console.error('[password-reset] could not send reset mail:', err && err.message ? err.message : err);
+    }
+  }
+  sendJson(res, 200, { ok: true });
+}
+
+export async function resetPassword(req, res, ctx) {
+  const body = await readJson(req);
+  const token = typeof body.token === 'string' ? body.token : '';
+  const row = await resolvePasswordReset(ctx.db, token);
+  if (!row) {
+    sendError(res, 400, 'invalid_token', 'This password reset link is invalid or has expired');
+    return;
+  }
+  const password = body.password;
+  if (typeof password !== 'string' || password.length < 8 || password.length > 200) {
+    sendError(res, 400, 'invalid_password', 'Password must be 8-200 characters');
+    return;
+  }
+  const consumed = await consumePasswordReset(ctx.db, row, password);
+  if (!consumed) {
+    sendError(res, 400, 'invalid_token', 'This password reset link is invalid or has expired');
+    return;
+  }
+  sendJson(res, 200, { ok: true });
 }
 
 export async function logout(req, res, ctx) {

@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import {
   renderLanding,
   renderAuth,
+  renderForgot,
+  renderReset,
   renderDashboard,
   renderEditor,
   renderBilling,
@@ -12,6 +14,7 @@ import {
 import * as templates from '../templates/index.js';
 import { isPro, quotaFor } from '../lib/gating.js';
 import { resolveLang, safeNext } from '../lib/lang.js';
+import { resolvePasswordReset } from '../lib/auth.js';
 import { fetchQuoteByToken, listEvents, listQuoteRows, markViewed, quoteRowToFull } from '../lib/quotes.js';
 import { isConfigured, isDemoMode, providerName } from '../lib/billing.js';
 import { publicDir } from '../lib/paths.js';
@@ -36,6 +39,22 @@ export function authPage(req, res, ctx, params) {
     return;
   }
   sendHtml(res, 200, renderAuth({ mode: params.mode, lang: resolveLang(req), path: req.url.split('?')[0] }));
+}
+
+export function forgotPage(req, res) {
+  sendHtml(res, 200, renderForgot({ lang: resolveLang(req), path: '/forgot' }));
+}
+
+// Invalid tokens still render 200 so the page can explain the state instead of
+// dead-ending on an error page; only live tokens get the form + hidden token.
+export async function resetPage(req, res, ctx) {
+  const token = new URL(req.url, ctx.baseUrl).searchParams.get('token') || '';
+  const row = await resolvePasswordReset(ctx.db, token);
+  sendHtml(
+    res,
+    200,
+    renderReset({ lang: resolveLang(req), path: '/reset', token: row ? token : '', invalid: !row })
+  );
 }
 
 export function langRoute(req, res, ctx, params) {
