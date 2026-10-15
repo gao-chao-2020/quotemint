@@ -303,3 +303,10 @@ renderError({status, message})
 - **路由**：`GET /admin` 仪表盘（UTC 自然月统计：用户/报价总数与本月新增；最近 10 个用户；最近 10 条审计；未登录 → 302 `/admin/login`）；`GET /admin/login`；`POST /admin/logout`；`GET /admin/users?q=`（邮箱+姓名 LIKE 搜索，元字符转义，≤50 行）；`POST /admin/grant` `{email, months=12}` → `{ok:true,data:{renews_at}}`（叠加到有效续费日期；404 `user_not_found`；400 `invalid_months`）；`POST /admin/revoke` `{email}`；`GET /admin/quotes?q=`（标题 + 客户名 + 归属邮箱 LIKE 搜索，元字符转义，≤50 行，每行带公开 `/q/<token>` 页链接）。所有管理端变更路由执行 §5 CSRF；未登录的 JSON 请求 → 401 `not_authenticated`。
 - **审计**：每次开通/撤销都在与套餐更新同一事务内写入 `admin_events (id, at, action, target_email, detail)`。
 - **共享内核**：`grantPro`/`revokePro`（`src/lib/admin.js`）同时支撑面板与 `scripts/grant.js`（CLI 输出/退出码不变；由 `test/integration/cli-grant.test.js` 覆盖）。轮换 `ADMIN_SESSION_SECRET` 即可使全部管理端会话失效。
+
+## 19. 邮件与账户找回（第 5 次迭代，2026-10-15）— 附录
+
+- **邮件客户端**（`src/lib/mailer.js`，零依赖，基于 `node:tls` 的 SMTP）：仅当 `SMTP_HOST` + `SMTP_PORT` + `SMTP_USER` + `SMTP_PASS` 全部配置时启用（调用时读环境变量）。`sendMail({to,subject,text,from})`；`SMTP_SECURE=0` 关闭隐式 TLS（仅测试 mock 用）；`MAIL_FROM` 留空则用 `SMTP_USER`。未配置时全部邮件功能优雅降级（管理员触发的发送返回 503 `mail_not_configured`；事件类通知静默跳过）。
+- **忘记密码**：`POST /api/auth/forgot` `{email}` —— 按 IP 限流 5 次/15 分钟，**永远返回 `200 {ok:true}`**（防枚举）；创建 sha256 存储的单次令牌（1 小时有效，作废此前未用令牌），并向用户发送含 `${BASE_URL}/reset?token=…` 的邮件。`POST /api/auth/reset` `{token,password}` —— 令牌有效且密码 ≥8 位 → 更新密码哈希、令牌作废、**删除该用户全部会话**（强制重新登录）。页面：`GET /forgot`、`GET /reset`（坏令牌显示失效页）。
+- **签收通知**：公开签收成功后，报价所属用户会收到邮件（双语；标题、客户、签收人姓名、时间戳、编辑器链接）。即发即弃——绝不阻塞或影响签收方的响应。
+- **续费提醒**：`GET /admin/expiring` 列出 `plan_renews_at` 在未来 7 天内的 Pro 账户；`POST /admin/expiring/remind` `{email}` 发送双语续费提醒邮件，并写入 `admin_events`（action=`remind`）。

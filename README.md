@@ -14,6 +14,7 @@
 - **收款**：中国客户支付宝收款码 ¥68/年（账单页扫码付款 → 邮件 support@ → 运营者运行 `npm run grant <邮箱> 12` 开通）；海外 $9/月走 Creem/Stripe（适配器就绪、默认休眠，待申请商户后启用）
 - **客服邮箱**：support@quotemint.dpdns.org（腾讯企业微信邮箱；收到的邮件自动转发到运营者QQ邮箱）
 - **管理端**：https://quotemint.dpdns.org/admin （开通/撤销用户、浏览报价单、统计、操作记录；默认隐藏需管理员密码；任何电脑/手机可用）
+- **邮件能力（2026-10-15）**：密码找回、签收通知、续费提醒；经腾讯企业邮箱 SMTP 发送；未配置时自动降级、不影响网站
 - **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（150 项）
 
 > 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。
@@ -120,6 +121,7 @@ WantedBy=multi-user.target
 | `TRUST_PROXY` | 空 | 反向代理（Caddy/Nginx）后面部署时设为 `1`，限流才会取用 `X-Forwarded-For` 真实客户端 IP |
 | `ADMIN_PASSWORD_HASH` | — | 管理端密码的 scrypt 哈希；与下一项同时配置才启用 /admin（生产配置在 Netlify） |
 | `ADMIN_SESSION_SECRET` | — | 管理端会话 Cookie 的 HMAC 签名密钥 |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` / `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` | — | 邮件发送（腾讯企业邮箱 SMTP，465 隐式 TLS）；未配置则邮件功能自动关闭 |
 | `CREEM_API_KEY` | — | Creem 密钥；设置后计费走 Creem（优先） |
 | `CREEM_PRODUCT_ID` | — | Creem Pro 订阅产品 ID |
 | `CREEM_WEBHOOK_SECRET` | — | Creem Webhook 签名密钥 |

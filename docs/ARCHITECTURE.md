@@ -86,6 +86,8 @@ src/
     gating.js                      套餐限制：Free 每月 3 份；Pro 到期自动降级
     http.js                        请求解析、CSRF/Origin 校验、IP 限流
     billing.js / stripe.js / creem.js   计费调度与两个提供商适配器（休眠备用）
+    mailer.js                           零依赖 SMTP 邮件客户端（邮件能力地基）
+    notify.js                           事件通知（签收邮件等，即发即弃）
   routes/
     auth.js / quotes.js / public.js / billing.js / pages.js   按域拆分的路由
     admin.js                                                管理端路由（/admin，默认对外 404，见 §7）
@@ -114,6 +116,7 @@ test/                              150 项单元 + 集成测试（npm test）
 
 - **入口边界**：全部请求先过 `src/server.js` 的安全头与路由；生产密钥只存在平台环境变量（Netlify），不落代码。
 - **管理端**：`/admin` 默认整体 404（未同时配置 `ADMIN_PASSWORD_HASH` + `ADMIN_SESSION_SECRET` 时与不存在无异）；独立管理员密码（scrypt 恒时校验）、HMAC 无状态会话（HttpOnly、`Path=/admin`）、登录限流、全部开通/撤销写入 `admin_events` 审计表（见 API-CONTRACT §18）。
+- **密码重置**：单次令牌（sha256 存储、1 小时有效、用后即焚），重置成功后该用户**全部会话强制下线**；请求接口永远返回成功以管理员防枚举（见 API-CONTRACT §19）。
 - 密码 scrypt 加盐；会话为数据库存储的 SHA-256 令牌；Cookie HttpOnly + SameSite=Lax + 生产 Secure。
 - 所有 SQL 参数化；所有用户内容 HTML 转义（服务端 `esc()`、客户端 `textContent`）——防注入/XSS。
 - 变更类请求校验 `X-Requested-With` + Origin（防 CSRF）；登录/注册/公开签收有 IP 限流（反代后靠 `TRUST_PROXY=1` 取真实 IP）。

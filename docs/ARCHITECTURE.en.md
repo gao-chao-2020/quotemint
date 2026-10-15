@@ -86,6 +86,8 @@ src/
     gating.js                      Plan limits: Free = 3 per month; Pro auto-downgrades at expiry
     http.js                        Request parsing, CSRF/Origin validation, IP rate limiting
     billing.js / stripe.js / creem.js   Billing orchestration and the two provider adapters (dormant, standby)
+    mailer.js                           Zero-dependency SMTP mail client (email foundation)
+    notify.js                           Event notifications (accept emails etc., fire-and-forget)
   routes/
     auth.js / quotes.js / public.js / billing.js / pages.js   Routes split by domain
     admin.js                                                  Admin panel routes (/admin, 404 by default — see §7)
@@ -114,6 +116,7 @@ test/                              150 unit + integration tests (npm test)
 
 - **Entry boundary**: every request first passes through the security headers and routing in `src/server.js`; production secrets exist only in platform environment variables (Netlify) and never land in code.
 - **Admin panel**: `/admin` is a plain 404 unless both `ADMIN_PASSWORD_HASH` and `ADMIN_SESSION_SECRET` are set; separate admin password (scrypt, timing-safe), stateless HMAC session (HttpOnly, `Path=/admin`), login rate limiting, and every grant/revoke written to the `admin_events` audit table (see API-CONTRACT §18).
+- **Password reset**: single-use tokens (sha256-stored, 1-hour TTL, consumed on first use); after a reset ALL of that user's sessions are force-logged-out; the request endpoint always answers success to prevent enumeration (see API-CONTRACT §19).
 - Passwords are salted with scrypt; sessions are SHA-256 tokens stored in the database; cookies are HttpOnly + SameSite=Lax + Secure in production.
 - All SQL is parameterized; all user content is HTML-escaped (server-side `esc()`, client-side `textContent`) — guards against injection/XSS.
 - Mutating requests validate `X-Requested-With` + Origin (CSRF protection); login/sign-up/public acceptance have IP rate limiting (behind the reverse proxy, `TRUST_PROXY=1` is used to obtain the real IP).

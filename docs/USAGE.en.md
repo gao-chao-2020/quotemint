@@ -37,7 +37,7 @@
 2. **Create a quote**: title, client name, line items (description / quantity / unit price), discount, tax, notes & terms, validity period. Amounts are calculated in real time.
 3. **Send**: click "Send" to generate a **dedicated link** (of the form `/q/<random token>`) — there is no email-sending feature; the user passes the link to the client themselves via email/WeChat (by design in v1).
 4. **Wait for the open**: as soon as the client opens the link, the user can see the open record in the quote's "Activity" panel.
-5. **Acceptance**: the client types their name, ticks the agreement box, and clicks accept → the status becomes "Accepted", showing the signer's name and time.
+5. **Acceptance**: the client types their name, ticks the agreement box, and clicks accept → the status becomes "Accepted", showing the signer's name and time; **you get an email notification the moment it is accepted**.
 6. **Archive**: print or save as a clean A4 PDF (buttons and navigation are hidden automatically).
 7. **Upgrade**: when the Free plan reaches the 4th quote of the month it reports "limit reached" → scan-and-pay ¥68/year on the billing page → email support@ → the operator activates Pro → takes effect immediately.
 
@@ -56,6 +56,8 @@
 | Replying as support@ | exmail.qq.com, WeChat QR-code login | When there's something to do |
 | Activating Pro for a customer | Open https://quotemint.dpdns.org/admin (admin password in `账号信息.md`) → search the email → click "Grant Pro"; or send the email to Claude | When a payment comes in |
 | Verifying payments | Alipay bill | When there's something to do |
+| Sending renewal reminders | Admin panel → "Renewals" page → one click | When a customer's renewal is within 7 days |
+| Customer says they forgot their password | Point them to "Forgot password?" on the login page (self-service — nothing for you to do) | — |
 | Website / database usage | Netlify and Neon dashboards | Occasionally |
 | Domain renewal | DigitalPlat (expires 2027-10-13, free to renew) | Once a year |
 | Changing anything on the website | Tell Claude directly → push → auto-deployed in about 1 minute | Anytime |

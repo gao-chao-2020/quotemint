@@ -14,6 +14,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 - **Payments**: China customers pay ¥68/year via the Alipay QR on the billing page (scan → email support@ → operator runs `npm run grant <email> 12`); overseas $9/month runs through Creem/Stripe (adapters ready, dormant until merchant accounts are approved)
 - **Support mailbox**: support@quotemint.dpdns.org (Tencent Exmail; inbound mail auto-forwards to the operator's QQ mailbox)
 - **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, browse quotes, stats, audit trail; hidden by default, password-protected; works on any computer or phone)
+- **Email (2026-10-15)**: password reset, accept notifications, renewal reminders — sent via Tencent Exmail SMTP; degrades gracefully when unconfigured, never affecting the site
 - **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (150 tests)
 
 > The self-hosted server playbook (Docker / systemd / Cloudflare Tunnel) is archived under `deploy/` for a future migration.
@@ -120,6 +121,7 @@ WantedBy=multi-user.target
 | `TRUST_PROXY` | empty | Set to `1` behind a reverse proxy (Caddy/Nginx) so rate limiting uses the real client IP from `X-Forwarded-For` |
 | `ADMIN_PASSWORD_HASH` | — | scrypt hash of the admin panel password; combined with the secret below, enables /admin (set in Netlify in production) |
 | `ADMIN_SESSION_SECRET` | — | HMAC signing secret for admin session cookies |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` / `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` | — | Email sending (Tencent Exmail SMTP, port 465 implicit TLS); email features are off when unset |
 | `CREEM_API_KEY` | — | Creem key; when set, billing goes through Creem (takes precedence) |
 | `CREEM_PRODUCT_ID` | — | Creem Pro subscription product ID |
 | `CREEM_WEBHOOK_SECRET` | — | Creem webhook signing secret |
