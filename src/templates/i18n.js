@@ -102,6 +102,8 @@ const CLIENT_KEYS = [
   'admin.confirm_revoke',
   'admin.busy.grant',
   'admin.busy.revoke',
+  'admin.busy.remind',
+  'admin.toast.remind_sent',
 ];
 
 export function clientStrings(lang) {

@@ -104,6 +104,22 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  const remindBtn = event.target.closest('[data-admin-remind]');
+  if (remindBtn) {
+    event.preventDefault();
+    const email = remindBtn.getAttribute('data-admin-remind');
+    setBusy(remindBtn, true, S['admin.busy.remind'] || 'Sending…');
+    try {
+      await call('/admin/expiring/remind', { email });
+      setBusy(remindBtn, false);
+      showStatus(S['admin.toast.remind_sent'] || 'Renewal reminder sent.');
+    } catch (error) {
+      setBusy(remindBtn, false);
+      if (error.message !== 'unauthorized') showStatus(error.message);
+    }
+    return;
+  }
+
   const actionBtn = event.target.closest('[data-admin-grant], [data-admin-revoke]');
   if (!actionBtn) return;
   event.preventDefault();

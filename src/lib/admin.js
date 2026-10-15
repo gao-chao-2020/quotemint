@@ -5,6 +5,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { HttpError, parseCookies } from './http.js';
 import { verifyPassword } from './auth.js';
+import { sendMail } from './mailer.js';
 
 export const ADMIN_COOKIE = 'qm_admin';
 const TOKEN_VERSION = 'v1';
@@ -99,6 +100,55 @@ export async function revokePro(db, email) {
     await db.run(`UPDATE users SET plan = 'free', plan_renews_at = NULL WHERE id = ?`, user.id);
     await recordAdminEvent(db, 'revoke', target, '');
   });
+}
+
+const SUPPORT_EMAIL = 'support@quotemint.dpdns.org';
+
+// Same bilingual plain-text shape as the password-reset mail (routes/auth.js):
+// EN section first, ZH section second.
+function renewalReminderText({ renewsDate, billingUrl }) {
+  return [
+    'Your QuoteMint Pro plan is due for renewal.',
+    '你的 QuoteMint 专业版即将到期，请及时续费。',
+    '',
+    `Renewal date (UTC): ${renewsDate}`,
+    `到期日期（UTC）：${renewsDate}`,
+    '',
+    'Renew before that date to keep unlimited quotes, custom branding, and full analytics.',
+    '在到期日前完成续费，即可继续享受不限量报价单、自定义品牌和完整的打开分析。',
+    '',
+    'How to renew:',
+    '续费方式：',
+    'Alipay (China): scan the payment QR code on the billing page and pay ¥68/year.',
+    '支付宝（中国）：在订阅页扫码支付 ¥68/年。',
+    `Outside China or need help: email ${SUPPORT_EMAIL} with your account email address.`,
+    `其他地区或需要协助：发送邮件至 ${SUPPORT_EMAIL}，注明你的注册邮箱。`,
+    '',
+    'Open the billing page:',
+    '打开订阅页面：',
+    '',
+    billingUrl,
+    '',
+    'You are receiving this email because your QuoteMint account is on the Pro plan.',
+    '你收到此邮件是因为你的 QuoteMint 账户正在使用专业版。'
+  ].join('\n');
+}
+
+// Emails the Pro renewal reminder and records the audit row. Mail failures
+// surface as MailError (an HttpError subclass); callers map it unchanged.
+export async function remindPro(db, email, baseUrl) {
+  const target = normalizeAdminEmail(email);
+  const user = await db.get('SELECT id, email, plan, plan_renews_at FROM users WHERE email = ?', target);
+  if (!user) throw new HttpError(404, 'user_not_found', 'No account found for this email');
+  if (user.plan !== 'pro') throw new HttpError(400, 'not_pro', 'That account is not on the Pro plan');
+  const renewsAt = String(user.plan_renews_at || '');
+  await sendMail({
+    to: user.email,
+    subject: 'Renew your QuoteMint Pro plan / 专业版续费提醒',
+    text: renewalReminderText({ renewsDate: renewsAt.slice(0, 10), billingUrl: `${baseUrl}/app/billing` })
+  });
+  await recordAdminEvent(db, 'remind', target, renewsAt);
+  return { renews_at: renewsAt };
 }
 
 async function recordAdminEvent(db, action, targetEmail, detail) {

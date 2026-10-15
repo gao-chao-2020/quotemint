@@ -10,19 +10,22 @@ import {
   grantPro,
   isAdminAuthed,
   normalizeAdminEmail,
+  remindPro,
   revokePro,
   setAdminCookie,
   verifyAdminPassword
 } from '../lib/admin.js';
 import { assetsDir } from '../lib/paths.js';
 import { quoteRowToFull } from '../lib/quotes.js';
-import { renderAdminDashboard, renderAdminLogin, renderAdminQuotes, renderAdminUsers } from '../templates/index.js';
+import { renderAdminDashboard, renderAdminExpiring, renderAdminLogin, renderAdminQuotes, renderAdminUsers } from '../templates/index.js';
 import { resolveLang } from '../lib/lang.js';
 
 const LOGIN_MAX_ATTEMPTS = 10;
 const SEARCH_LIMIT = 50;
 const DASHBOARD_USER_LIMIT = 10;
 const AUDIT_LIMIT = 10;
+const EXPIRING_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const EXPIRING_LIMIT = 50;
 
 const loginLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: LOGIN_MAX_ATTEMPTS });
 
@@ -175,6 +178,42 @@ export async function quotesPage(req, res, ctx) {
   const q = queryParam(req, 'q').trim().slice(0, 254);
   const quotes = await searchQuotes(ctx.db, q);
   sendHtml(res, 200, renderAdminQuotes({ lang: resolveLang(req), path: '/admin/quotes', q, quotes }));
+}
+
+export async function expiringPage(req, res, ctx) {
+  if (!requireAdminPage(req, res)) return;
+  const now = Date.now();
+  // plan_renews_at is a fixed-width ISO-8601 UTC string, so range comparisons
+  // are lexicographic and identical on SQLite and Postgres.
+  const users = await ctx.db.all(
+    `SELECT email, name, plan_renews_at FROM users
+     WHERE plan = 'pro' AND plan_renews_at >= ? AND plan_renews_at <= ?
+     ORDER BY plan_renews_at ASC LIMIT ?`,
+    new Date(now).toISOString(),
+    new Date(now + EXPIRING_WINDOW_MS).toISOString(),
+    EXPIRING_LIMIT
+  );
+  sendHtml(res, 200, renderAdminExpiring({ lang: resolveLang(req), path: '/admin/expiring', users }));
+}
+
+export async function remind(req, res, ctx) {
+  if (!requireAdminJson(req, res)) return;
+  const body = await readJson(req);
+  const email = normalizeAdminEmail(body.email);
+  if (!email) {
+    sendError(res, 400, 'invalid_email', 'Provide the account email');
+    return;
+  }
+  try {
+    const result = await remindPro(ctx.db, email, ctx.baseUrl);
+    sendJson(res, 200, { ok: true, data: { renews_at: result.renews_at } });
+  } catch (err) {
+    if (err instanceof HttpError) {
+      sendError(res, err.status, err.code, err.message);
+      return;
+    }
+    throw err;
+  }
 }
 
 export async function grant(req, res, ctx) {

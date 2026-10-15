@@ -52,7 +52,7 @@ function auditTable(events, lang) {
   if (rows.length === 0) return `<p class="admin-empty">${esc(t(lang, 'admin.audit.empty'))}</p>`;
   const body = rows
     .map((event) => {
-      const label = event.action === 'grant' ? 'admin.action.grant' : event.action === 'revoke' ? 'admin.action.revoke' : '';
+      const label = event.action === 'grant' ? 'admin.action.grant' : event.action === 'revoke' ? 'admin.action.revoke' : event.action === 'remind' ? 'admin.action.remind' : '';
       return `<tr>
 <td>${esc(formatDateTime(event.at, lang))}</td>
 <td>${esc(label ? t(lang, label) : String(event.action || ''))}</td>
@@ -84,7 +84,7 @@ function adminNav(lang, path) {
   const link = (href, key, current) =>
     `<a class="btn ${current ? 'btn-primary' : 'btn-secondary'} btn-sm" href="${href}"${current ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
   const onUsers = path === '/admin' || path === '/admin/users';
-  return `<nav class="admin-nav">${link('/admin', 'admin.nav.users', onUsers)}${link('/admin/quotes', 'admin.nav.quotes', path === '/admin/quotes')}</nav>`;
+  return `<nav class="admin-nav">${link('/admin', 'admin.nav.users', onUsers)}${link('/admin/quotes', 'admin.nav.quotes', path === '/admin/quotes')}${link('/admin/expiring', 'admin.nav.expiring', path === '/admin/expiring')}</nav>`;
 }
 
 function quoteRow(quote, lang) {
@@ -115,6 +115,74 @@ function quoteTable(quotes, lang) {
 </tr></thead>
 <tbody>${rows.map((quote) => quoteRow(quote, lang)).join('')}</tbody>
 </table></div>`;
+}
+
+function daysLeft(renewsAt) {
+  const ms = Date.parse(renewsAt);
+  if (!Number.isFinite(ms)) return '—';
+  return String(Math.max(0, Math.ceil((ms - Date.now()) / 86_400_000)));
+}
+
+function expiringRow(user, lang) {
+  const email = String(user.email || '');
+  return `<tr>
+<td class="admin-col-email">${esc(email)}</td>
+<td>${esc(user.name || '')}</td>
+<td>${user.plan_renews_at ? esc(formatDate(user.plan_renews_at, lang)) : '—'}</td>
+<td class="admin-col-days">${esc(daysLeft(user.plan_renews_at))}</td>
+<td><button type="button" class="btn btn-primary btn-sm" data-admin-remind="${esc(email)}">${esc(t(lang, 'admin.btn.remind'))}</button></td>
+</tr>`;
+}
+
+function expiringTable(users, lang) {
+  const rows = Array.isArray(users) ? users : [];
+  if (rows.length === 0) return `<p class="admin-empty">${esc(t(lang, 'admin.expiring.empty'))}</p>`;
+  return `<div class="table-scroll"><table class="admin-table">
+<thead><tr>
+<th>${esc(t(lang, 'admin.col.email'))}</th>
+<th>${esc(t(lang, 'admin.col.name'))}</th>
+<th>${esc(t(lang, 'admin.col.renews'))}</th>
+<th>${esc(t(lang, 'admin.col.days_left'))}</th>
+<th>${esc(t(lang, 'admin.col.actions'))}</th>
+</tr></thead>
+<tbody>${rows.map((user) => expiringRow(user, lang)).join('')}</tbody>
+</table></div>`;
+}
+
+export function renderAdminExpiring({ users = [], lang = 'en', path = '/admin/expiring' } = {}) {
+  const body = `
+<div class="container admin-main">
+<div class="page-head">
+<div>
+<h1 class="page-title">${esc(t(lang, 'admin.expiring.heading'))}</h1>
+<p class="page-sub">${esc(t(lang, 'admin.expiring.sub'))}</p>
+</div>
+<div class="admin-head-actions">
+${langSwitch(lang, path)}
+<a class="btn btn-secondary btn-sm" href="/admin">${esc(t(lang, 'admin.users.back'))}</a>
+</div>
+</div>
+<p class="form-error" id="admin-status" role="alert" hidden></p>
+${adminNav(lang, path)}
+<section class="panel admin-section" aria-label="${esc(t(lang, 'admin.nav.expiring'))}">
+<div class="admin-section-head">
+<h2 class="panel-title">${esc(t(lang, 'admin.nav.expiring'))}</h2>
+</div>
+${expiringTable(users, lang)}
+</section>
+</div>`;
+
+  return layout({
+    lang,
+    path,
+    title: t(lang, 'admin.meta.dashboard_title'),
+    description: '',
+    body,
+    nav: 'none',
+    bodyClass: 'page-admin',
+    scripts: ['/admin/admin.js'],
+    noindex: true,
+  });
 }
 
 export function renderAdminLogin({ lang = 'en', path = '/admin/login' } = {}) {

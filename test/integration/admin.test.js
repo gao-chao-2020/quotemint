@@ -60,7 +60,7 @@ after(async () => {
 test('gate off: /admin paths are a byte-identical 404 to a nonexistent route', async () => {
   const control = await api(off, 'GET', '/definitely-not-a-route');
   assert.equal(control.status, 404);
-  for (const path of ['/admin', '/admin/login', '/admin/users?q=x', '/admin/quotes?q=x', '/admin.js', '/admin/admin.js', '/%61dmin.js', '/.%2fadmin.js']) {
+  for (const path of ['/admin', '/admin/login', '/admin/users?q=x', '/admin/quotes?q=x', '/admin/expiring', '/admin.js', '/admin/admin.js', '/%61dmin.js', '/.%2fadmin.js']) {
     const res = await api(off, 'GET', path);
     assert.equal(res.status, 404, `${path} must 404 when unconfigured`);
     assert.equal(res.text, control.text, `${path} must be indistinguishable from a nonexistent route`);

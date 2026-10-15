@@ -104,8 +104,10 @@ const routes = [
   route('POST', '/admin/logout', adminRoutes.logout),
   route('GET', '/admin/users', adminRoutes.usersPage),
   route('GET', '/admin/quotes', adminRoutes.quotesPage),
+  route('GET', '/admin/expiring', adminRoutes.expiringPage),
   route('POST', '/admin/grant', adminRoutes.grant),
-  route('POST', '/admin/revoke', adminRoutes.revoke)
+  route('POST', '/admin/revoke', adminRoutes.revoke),
+  route('POST', '/admin/expiring/remind', adminRoutes.remind)
 ];
 
 function health(req, res) {

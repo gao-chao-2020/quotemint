@@ -32,6 +32,7 @@ export default {
 
     'admin.nav.users': 'Users',
     'admin.nav.quotes': 'Quotes',
+    'admin.nav.expiring': 'Renewals',
     'admin.quotes.heading': 'Quote search',
     'admin.quotes.sub': 'Find a quote by title, client, or owner email; open it via its public link.',
     'admin.quotes.latest': 'Newest quotes',
@@ -65,13 +66,26 @@ export default {
     'admin.action.grant': 'Grant',
     'admin.action.revoke': 'Revoke',
 
+    'admin.col.days_left': 'Days left',
+    'admin.btn.remind': 'Send renewal reminder',
+
+    'admin.expiring.heading': 'Renewals due within 7 days',
+    'admin.expiring.sub': 'Pro accounts whose renewal date falls within the next 7 days.',
+    'admin.expiring.empty': 'No renewals are due in the next 7 days.',
+
     'admin.confirm_revoke': 'Revoke Pro for {email}? The account returns to the Free plan.',
     'admin.busy.grant': 'Granting…',
     'admin.busy.revoke': 'Revoking…',
+    'admin.busy.remind': 'Sending…',
+    'admin.toast.remind_sent': 'Renewal reminder sent.',
+
+    'admin.action.remind': 'Reminder',
 
     'errcode.bad_password': 'Incorrect password.',
     'errcode.user_not_found': 'No account found for that email.',
     'errcode.invalid_months': 'Months must be a whole number between 1 and 120.',
+    'errcode.not_pro': 'That account is not on the Pro plan.',
+    'errcode.mail_not_configured': 'Email delivery is not configured on the server.',
   },
   zh: {
     'admin.meta.dashboard_title': '管理 — QuoteMint',
@@ -104,6 +118,7 @@ export default {
 
     'admin.nav.users': '用户',
     'admin.nav.quotes': '报价单',
+    'admin.nav.expiring': '到期提醒',
     'admin.quotes.heading': '报价单搜索',
     'admin.quotes.sub': '按标题、客户或归属邮箱查找报价单；点“查看”打开公开页面。',
     'admin.quotes.latest': '最新报价单',
@@ -137,12 +152,25 @@ export default {
     'admin.action.grant': '开通',
     'admin.action.revoke': '取消',
 
+    'admin.col.days_left': '剩余天数',
+    'admin.btn.remind': '发送续费提醒',
+
+    'admin.expiring.heading': '7 天内到期的续费',
+    'admin.expiring.sub': '续费日期在未来 7 天内的专业版账户。',
+    'admin.expiring.empty': '未来 7 天内没有需要续费的账户。',
+
     'admin.confirm_revoke': '确定为 {email} 取消专业版吗？该账户将回到免费版。',
     'admin.busy.grant': '开通中…',
     'admin.busy.revoke': '取消中…',
+    'admin.busy.remind': '发送中…',
+    'admin.toast.remind_sent': '续费提醒已发送。',
+
+    'admin.action.remind': '提醒',
 
     'errcode.bad_password': '密码不正确。',
     'errcode.user_not_found': '未找到该邮箱对应的账户。',
     'errcode.invalid_months': '月数必须是 1 到 120 之间的整数。',
+    'errcode.not_pro': '该账户不是专业版。',
+    'errcode.mail_not_configured': '服务器未配置邮件发送。',
   },
 };

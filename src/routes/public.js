@@ -1,4 +1,5 @@
 import { clientIp, createRateLimiter, readJson, sendError, sendJson } from '../lib/http.js';
+import { notifyQuoteAccepted } from '../lib/notify.js';
 import { acceptQuote, declineQuote, fetchQuoteByToken, QuoteError } from '../lib/quotes.js';
 
 const publicLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30 });
@@ -34,6 +35,8 @@ export async function acceptPublicQuote(req, res, ctx, params) {
   if (!quote) return;
   try {
     const updated = await acceptQuote(ctx.db, quote, name);
+    // Fire-and-forget: mail problems must never delay or fail the client's accept.
+    void notifyQuoteAccepted(ctx.db, updated, ctx.baseUrl);
     sendJson(res, 200, {
       ok: true,
       data: { status: updated.status, accepted_name: updated.accepted_name, accepted_at: updated.accepted_at }
