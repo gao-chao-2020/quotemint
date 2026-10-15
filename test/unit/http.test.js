@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { clientIp, parseCookies, setSessionCookie } from '../../src/lib/http.js';
+import { Readable } from 'node:stream';
+import { clientIp, parseCookies, readBody, readJson, setSessionCookie } from '../../src/lib/http.js';
 
 function req(headers = {}, remoteAddress = '10.0.0.1') {
   return { headers, socket: remoteAddress ? { remoteAddress } : null };
@@ -90,4 +91,19 @@ test('parseCookies falls back to raw value on malformed percent-encoding', () =>
 test('parseCookies skips nameless parts and handles no cookie header', () => {
   assert.deepEqual(parseCookies(req({})), {});
   assert.deepEqual(parseCookies(req({ cookie: '=nope; ok=1' })), { ok: '1' });
+});
+
+test('readBody returns the raw buffer; readJson parses the same bytes', async () => {
+  const body = await readBody(Readable.from([Buffer.from('{"a":'), Buffer.from('1}')]));
+  assert.ok(Buffer.isBuffer(body));
+  assert.equal(body.toString('utf8'), '{"a":1}');
+
+  assert.deepEqual(await readJson(Readable.from([Buffer.from('{"a":1}')])), { a: 1 });
+  assert.deepEqual(await readJson(Readable.from([])), {}, 'empty body parses to {}');
+});
+
+test('readBody rejects bodies over 1MB with 413 (readJson inherits the limit)', async () => {
+  const isTooLarge = (err) => err.status === 413 && err.code === 'payload_too_large';
+  await assert.rejects(readBody(Readable.from([Buffer.alloc(1024 * 1024 + 1, 0x61)])), isTooLarge);
+  await assert.rejects(readJson(Readable.from([Buffer.alloc(1024 * 1024 + 1, 0x61)])), isTooLarge);
 });

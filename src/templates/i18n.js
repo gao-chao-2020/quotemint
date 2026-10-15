@@ -16,7 +16,7 @@ export const LANGS = ['en', 'zh'];
 
 const PARTS = [dictCommon, dictLayout, dictLanding, dictAuth, dictDashboard, dictEditor, dictBilling, dictQuote, dictLegal, dictAdmin];
 
-const DICTS = { en: {}, zh: {} };
+export const DICTS = { en: {}, zh: {} };
 for (const part of PARTS) {
   Object.assign(DICTS.en, part.en);
   Object.assign(DICTS.zh, part.zh);

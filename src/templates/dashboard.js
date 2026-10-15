@@ -50,7 +50,7 @@ function quoteRow(quote, lang) {
   const meta = [
     quote.client_name ? esc(quote.client_name) : '',
     quote.created_at ? esc(t(lang, 'dash.created', { date: formatDate(quote.created_at, lang) })) : '',
-    `${icon('eye', 14)}<span>${views}</span>`,
+    `${icon('eye', 14)}<span class="sr-only">${esc(t(lang, 'dash.row.views_sr'))}</span><span>${views}</span>`,
   ].filter(Boolean).join('<span class="dot" aria-hidden="true"></span>');
 
   return `<li class="quote-row" data-id="${id}">

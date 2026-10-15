@@ -1,7 +1,7 @@
 // Public quote page (GET /q/:token). Document-style layout, print-optimized A4.
 // Branding (company/logo_text/brand_color) applies when the owner is on Pro.
 
-import { bootScript, computeTotals, esc, footerMeta, formatDate, formatDateTime, formatMoney, icon, langSwitch, layout } from './layout.js';
+import { bootScript, computeTotals, esc, footerMeta, formatDate, formatDateTime, formatMoney, icon, langSwitch, layout, sanitizeBrandColor } from './layout.js';
 import { t } from './i18n.js';
 
 function issuerName(branding) {
@@ -115,7 +115,9 @@ export function renderPublicQuote({ quote, totals, branding = null, showBadge = 
   const resolvedPath = path || `/q/${String(quote.public_token || '')}`;
   const currency = String(quote.currency || 'USD');
   const sums = totals || computeTotals(quote.items, quote.discount_pct, quote.tax_pct);
-  const brand = String(branding?.brand_color || '');
+  // Defense in depth: the article's --brand is CSS context, so it must be a validated
+  // hex color even if a bad value slipped past API validation.
+  const brand = branding?.brand_color ? sanitizeBrandColor(branding.brand_color) : '';
   const name = issuerName(branding);
   const monogram = name ? issuerMonogram(name) : '';
   const status = String(quote.status || 'draft');

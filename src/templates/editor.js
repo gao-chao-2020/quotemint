@@ -127,14 +127,6 @@ export function renderEditor({ user, quote = null, quota = null, events = null, 
 <h2 class="side-title">${icon('send', 17)} ${esc(t(lang, 'ed.send.title'))}</h2>
 <p class="side-text">${esc(t(lang, 'ed.send.sub'))}</p>
 <button type="button" class="btn btn-primary btn-block" id="send-btn" data-quote-id="${Number(quote.id) || 0}">${esc(t(lang, 'ed.send.button'))}</button>
-<div class="send-result" id="send-result" hidden>
-<p class="field-label">${esc(t(lang, 'ed.link.public'))}</p>
-<div class="copy-row">
-<input class="input" id="send-url" type="text" readonly aria-label="${esc(t(lang, 'ed.link.aria'))}">
-<button type="button" class="btn btn-secondary" id="send-copy">${icon('copy', 16)} ${esc(t(lang, 'ed.copy'))}</button>
-</div>
-<a class="btn btn-secondary btn-block" id="send-open" href="#" target="_blank" rel="noopener">${icon('external', 16)} ${esc(t(lang, 'ed.open_link'))}</a>
-</div>
 </div>`
     : '';
 

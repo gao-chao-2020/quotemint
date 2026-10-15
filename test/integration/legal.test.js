@@ -69,6 +69,22 @@ test('landing footer links to /privacy, /terms and the support email (§17)', as
   assert.ok(res.text.includes(SUPPORT_EMAIL), 'footer must show the support email');
 });
 
+test('shared head carries the og share-card meta and upgraded twitter card', async () => {
+  const res = await api(server, 'GET', '/');
+  assert.equal(res.status, 200);
+  assert.ok(res.text.includes('<meta property="og:image" content="https://quotemint.dpdns.org/og.png">'), 'og:image missing');
+  assert.ok(res.text.includes('<meta property="og:image:width" content="1200">'), 'og:image:width missing');
+  assert.ok(res.text.includes('<meta property="og:image:height" content="630">'), 'og:image:height missing');
+  assert.ok(res.text.includes('<meta name="twitter:card" content="summary_large_image">'), 'twitter:card must be summary_large_image');
+});
+
+test('GET /og.png -> 200 image/png (share card asset is served)', async () => {
+  const res = await api(server, 'GET', '/og.png');
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'image/png');
+  assert.ok(res.text.length > 1024, 'share card should be a real image, not an error stub');
+});
+
 test('app shell footer links to /privacy, /terms and the support email (§17 both shells)', async () => {
   const user = await signup(server, { name: 'Legal Footer' });
   const res = await api(server, 'GET', '/app', { cookie: user.cookie });

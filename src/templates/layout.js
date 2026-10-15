@@ -10,6 +10,10 @@ const DEFAULT_BRAND = '#4F46E5';
 
 export const SUPPORT_EMAIL = 'support@quotemint.dpdns.org';
 
+// Social share card (public/og.png, 1200×630). Absolute URL is hardcoded because
+// OG consumers require the public production domain for images.
+const OG_IMAGE_URL = 'https://quotemint.dpdns.org/og.png';
+
 export function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
 }
@@ -305,7 +309,10 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ''}<link rel="icon" typ
 <meta property="og:title" content="${esc(resolvedTitle)}">
 <meta property="og:description" content="${esc(resolvedDescription)}">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="${OG_IMAGE_URL}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body${bodyClass ? ` class="${esc(bodyClass)}"` : ''}>

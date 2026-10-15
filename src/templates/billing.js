@@ -14,17 +14,13 @@ function providerLabel(name) {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
 }
 
-export function renderBilling({ user, billingEnabled = false, demoMode = false, upgraded = false, providerName = null, alipayQr = false, lang = 'en', path = '/app/billing' } = {}) {
+export function renderBilling({ user, billingEnabled = false, demoMode = false, providerName = null, alipayQr = false, lang = 'en', path = '/app/billing' } = {}) {
   const pro = isPro(user);
   const period = esc(t(lang, 'bill.period'));
   const provider = providerLabel(providerName);
-  const footLine = provider
-    ? t(lang, 'bill.foot.provider', { provider })
-    : t(lang, 'bill.upgrade.unavailable');
-
-  const upgradedBanner = upgraded
-    ? `<div class="banner banner-success" id="upgraded-banner" role="status">${icon('check-circle', 18)}<div><strong>${esc(t(lang, 'bill.banner.title'))}</strong><p>${esc(t(lang, 'bill.banner.body'))}</p></div></div>`
-    : '';
+  // Payments line renders only when a provider actually handles checkout; without one
+  // the upgrade card carries the manual contact path instead of an error message.
+  const footLine = provider ? t(lang, 'bill.foot.provider', { provider }) : '';
 
   const planCard = pro
     ? `<article class="plan-card plan-card-pro">
@@ -83,8 +79,7 @@ ${checkItem(t(lang, 'bill.check.nobadge'))}
 </ul>
 ${billingEnabled
       ? `<button type="button" class="btn btn-primary btn-block btn-lg" id="upgrade-btn">${esc(t(lang, 'bill.upgrade.button'))}</button>`
-      : `<button type="button" class="btn btn-primary btn-block btn-lg" id="upgrade-btn" disabled aria-disabled="true">${esc(t(lang, 'bill.upgrade.button'))}</button>
-<p class="plan-note plan-note-warn">${icon('alert', 15)} ${esc(t(lang, 'bill.upgrade.unavailable'))}</p>`}
+      : `<a class="btn btn-primary btn-block btn-lg" href="mailto:${SUPPORT_EMAIL}?subject=QuoteMint Pro">${esc(t(lang, 'bill.upgrade.contact'))}</a>`}
 ${demoMode ? `<button type="button" class="btn btn-secondary btn-block" id="demo-upgrade-btn">${esc(t(lang, 'bill.demo'))}</button>` : ''}
 </article>`;
 
@@ -117,12 +112,11 @@ ${demoMode ? `<button type="button" class="btn btn-secondary btn-block" id="demo
 <p class="page-sub">${esc(t(lang, 'bill.head.sub'))}</p>
 </div>
 </div>
-${upgradedBanner}
 <div class="plans">
 ${planCard}
 ${upgradeCard}${alipayCard ? `\n${alipayCard}` : ''}
 </div>
-<p class="billing-foot muted">${esc(footLine)}</p>
+${footLine ? `\n<p class="billing-foot muted">${esc(footLine)}</p>` : ''}
 </div>`;
 
   return layout({

@@ -150,6 +150,24 @@ test('no billing env -> checkout is 503 billing_disabled', async () => {
   assertErr(res, 503, 'billing_disabled');
 });
 
+test('no billing env -> billing page offers the mailto upgrade CTA, no dead button (§17)', async () => {
+  const user = await signup(noneServer, { name: 'Billing CTA' });
+  const en = await api(noneServer, 'GET', '/app/billing', { cookie: user.cookie });
+  assert.equal(en.status, 200);
+  assert.ok(
+    en.text.includes('href="mailto:support@quotemint.dpdns.org?subject=QuoteMint Pro"'),
+    'billing page must offer the mailto upgrade CTA when no provider is configured'
+  );
+  assert.ok(en.text.includes('Contact us to upgrade'), 'en CTA label missing');
+  assert.ok(!en.text.includes('id="upgrade-btn"'), 'checkout button must not render without a provider');
+  assert.ok(en.text.includes('id="demo-upgrade-btn"'), 'demo upgrade button must stay (DEMO_MODE only)');
+
+  const zh = await api(noneServer, 'GET', '/app/billing', { cookie: `lang=zh; ${user.cookie}` });
+  assert.ok(zh.text.includes('联系我们开通'), 'zh CTA label missing');
+  const duplicated = zh.text.split('暂时不可用').length - 1;
+  assert.ok(duplicated <= 1, `unavailable message must not be duplicated, found ${duplicated}`);
+});
+
 test('stripe-only env -> dispatch selects stripe (not billing_disabled, not creem)', async () => {
   const user = await signup(stripeServer, { name: 'Stripe Only' });
   const beforeCount = stubRequests.length;

@@ -18,7 +18,9 @@ export class HttpError extends Error {
   }
 }
 
-export function readJson(req) {
+// Raw request body (Buffer), capped at 1MB. Callers that need bytes (webhook
+// signature verification) use this directly; readJson() layers JSON parsing on top.
+export function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
@@ -43,18 +45,19 @@ export function readJson(req) {
         reject(new HttpError(413, 'payload_too_large', 'Request body exceeds 1MB'));
         return;
       }
-      const raw = Buffer.concat(chunks).toString('utf8');
-      if (!raw) {
-        resolve({});
-        return;
-      }
-      try {
-        resolve(JSON.parse(raw));
-      } catch {
-        reject(new HttpError(400, 'invalid_json', 'Request body must be valid JSON'));
-      }
+      resolve(Buffer.concat(chunks));
     });
   });
+}
+
+export async function readJson(req) {
+  const raw = (await readBody(req)).toString('utf8');
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new HttpError(400, 'invalid_json', 'Request body must be valid JSON');
+  }
 }
 
 export function parseCookies(req) {

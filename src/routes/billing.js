@@ -1,10 +1,8 @@
-import { sendError, sendJson, HttpError } from '../lib/http.js';
+import { readBody, sendError, sendJson } from '../lib/http.js';
 import { publicUser } from '../lib/auth.js';
 import { createCheckoutSession, isConfigured, isDemoMode, providerName, renewsAtFromNow } from '../lib/billing.js';
 import * as creem from '../lib/creem.js';
 import { handleWebhookEvent, verifyWebhook } from '../lib/stripe.js';
-
-const RAW_LIMIT_BYTES = 1024 * 1024;
 
 export async function checkout(req, res, ctx) {
   if (!ctx.user) {
@@ -38,41 +36,12 @@ export async function demoUpgrade(req, res, ctx) {
   sendJson(res, 200, { ok: true, data: { user: publicUser(user) } });
 }
 
-function readRawBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let size = 0;
-    let overflow = false;
-    req.on('data', (chunk) => {
-      size += chunk.length;
-      if (size > RAW_LIMIT_BYTES) {
-        overflow = true;
-        chunks.length = 0;
-        if (size > RAW_LIMIT_BYTES * 8) {
-          reject(new HttpError(413, 'payload_too_large', 'Request body exceeds 1MB'));
-          req.destroy();
-        }
-        return;
-      }
-      chunks.push(chunk);
-    });
-    req.on('error', reject);
-    req.on('end', () => {
-      if (overflow) {
-        reject(new HttpError(413, 'payload_too_large', 'Request body exceeds 1MB'));
-        return;
-      }
-      resolve(Buffer.concat(chunks));
-    });
-  });
-}
-
 export async function stripeWebhook(req, res, ctx) {
   if (!ctx.stripeWebhookSecret) {
     sendError(res, 503, 'billing_disabled', 'Webhook secret is not configured');
     return;
   }
-  const raw = await readRawBody(req);
+  const raw = await readBody(req);
   const result = verifyWebhook(raw.toString('utf8'), req.headers['stripe-signature'], ctx.stripeWebhookSecret);
   if (!result.ok) {
     sendError(res, 400, 'invalid_signature', 'Signature verification failed');
@@ -94,7 +63,7 @@ export async function creemWebhook(req, res, ctx) {
     sendError(res, 503, 'billing_disabled', 'Webhook secret is not configured');
     return;
   }
-  const raw = await readRawBody(req);
+  const raw = await readBody(req);
   const result = creem.verifyWebhook(raw.toString('utf8'), req.headers['creem-signature'], ctx.creemWebhookSecret);
   if (!result.ok) {
     sendError(res, 400, 'invalid_signature', 'Signature verification failed');

@@ -33,6 +33,7 @@ export default {
 
     'dash.untitled': 'Untitled quote',
     'dash.created': 'Created {date}',
+    'dash.row.views_sr': 'Views',
     'dash.row.open_page': 'Open public quote page',
     'dash.row.open_link': 'Open public link',
     'dash.row.copy_link': 'Copy quote link',
@@ -83,6 +84,7 @@ export default {
 
     'dash.untitled': '未命名报价单',
     'dash.created': '创建于 {date}',
+    'dash.row.views_sr': '查看次数',
     'dash.row.open_page': '打开公开报价页',
     'dash.row.open_link': '打开公开链接',
     'dash.row.copy_link': '复制报价链接',

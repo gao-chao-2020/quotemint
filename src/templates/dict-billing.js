@@ -38,7 +38,7 @@ export default {
     'bill.upgrade.title': 'Upgrade',
     'bill.recommended': 'Recommended',
     'bill.upgrade.button': 'Upgrade to Pro',
-    'bill.upgrade.unavailable': 'Upgrades are temporarily unavailable. Try again soon.',
+    'bill.upgrade.contact': 'Contact us to upgrade',
     'bill.demo': 'Demo upgrade (dev only)',
 
     'bill.alipay.eyebrow': 'Alipay',
@@ -96,7 +96,7 @@ export default {
     'bill.upgrade.title': '升级',
     'bill.recommended': '推荐',
     'bill.upgrade.button': '升级到专业版',
-    'bill.upgrade.unavailable': '升级服务暂时不可用，请稍后再试。',
+    'bill.upgrade.contact': '联系我们开通',
     'bill.demo': '演示升级（仅开发环境）',
 
     'bill.alipay.eyebrow': '支付宝',

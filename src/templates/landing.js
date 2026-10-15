@@ -140,7 +140,7 @@ ${checkItem(t(lang, 'landing.pricing.check.branding'))}
 ${checkItem(t(lang, 'landing.pricing.check.nobadge'))}
 ${checkItem(t(lang, 'landing.pricing.check.everything'))}
 </ul>
-<a class="btn btn-primary btn-block" href="/signup">${esc(t(lang, 'landing.pricing.pro.cta'))}</a>
+<a class="btn btn-primary btn-block" href="/signup">${esc(t(lang, 'landing.pricing.pro.cta_choose'))}</a>
 <p class="price-alt">${t(lang, 'landing.pricing.pro.alt')}</p>
 </article>
 </div>

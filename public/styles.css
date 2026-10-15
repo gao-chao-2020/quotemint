@@ -413,8 +413,6 @@ to { opacity: 1; transform: translateY(0); }
 .side-text { font-size: 13.5px; color: var(--ink-500); margin-top: 9px; }
 .side-panel .btn { margin-top: 13px; }
 .side-panel .btn + .side-text { margin-top: 10px; }
-.send-result { display: grid; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
-.field-label { font-size: 12.5px; font-weight: 600; color: var(--ink-600); text-transform: uppercase; letter-spacing: 0.05em; }
 .copy-row { display: flex; gap: 8px; }
 .copy-row .input { font-family: var(--mono); font-size: 12.5px; padding: 9px 10px; min-width: 0; }
 .copy-row .btn { margin-top: 0; flex-shrink: 0; }
@@ -428,7 +426,6 @@ to { opacity: 1; transform: translateY(0); }
 .plan-name { font-size: 25px; font-weight: 800; letter-spacing: -0.02em; margin-top: 5px; }
 .plan-price { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink-900); margin-top: 16px; display: flex; align-items: baseline; gap: 6px; }
 .plan-note { font-size: 13.5px; color: var(--ink-500); margin-top: 9px; }
-.plan-note-warn { display: flex; align-items: center; gap: 7px; color: var(--warn-ink); }
 .plan-card .check-list { margin-bottom: 24px; }
 .plan-card .btn + .btn { margin-top: 10px; }
 .plan-card .btn-block:last-child { margin-top: auto; }

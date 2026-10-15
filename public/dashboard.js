@@ -16,7 +16,7 @@ document.addEventListener('click', async (event) => {
   if (!copyBtn) return;
   const id = currentRow(event);
   const quote = id !== null ? quoteById.get(id) : null;
-  const token = copyBtn.dataset.token || (quote && quote.public_token);
+  const token = quote?.public_token;
   if (!token) return;
   try {
     await copyText(absoluteUrl(`/q/${token}`));
