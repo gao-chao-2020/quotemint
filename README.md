@@ -15,7 +15,7 @@
 - **客服邮箱**：support@quotemint.dpdns.org（腾讯企业微信邮箱；收到的邮件自动转发到运营者QQ邮箱）
 - **管理端**：https://quotemint.dpdns.org/admin （开通/撤销用户、浏览报价单、统计、操作记录；默认隐藏需管理员密码；任何电脑/手机可用）
 - **邮件能力（2026-10-15）**：密码找回、签收通知、续费提醒；经腾讯企业邮箱 SMTP 发送；未配置时自动降级、不影响网站
-- **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（150 项）
+- **本地开发**：`npm start`（.env 设 `DEMO_MODE=true` 后 `npm run seed` 生成演示账号）；测试 `npm test`（204 项）
 
 > 服务器路线（Docker / systemd / Cloudflare 隧道）的操作手册保留在 `deploy/`，作为将来迁移时的存档参考。
 

@@ -15,7 +15,7 @@ A complete product that is already live: marketing site, signup/login, quote edi
 - **Support mailbox**: support@quotemint.dpdns.org (Tencent Exmail; inbound mail auto-forwards to the operator's QQ mailbox)
 - **Admin panel**: https://quotemint.dpdns.org/admin (grant/revoke users, browse quotes, stats, audit trail; hidden by default, password-protected; works on any computer or phone)
 - **Email (2026-10-15)**: password reset, accept notifications, renewal reminders — sent via Tencent Exmail SMTP; degrades gracefully when unconfigured, never affecting the site
-- **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (150 tests)
+- **Local development**: `npm start` (set `DEMO_MODE=true` in .env, run `npm run seed` for demo accounts); tests via `npm test` (204 tests)
 
 > The self-hosted server playbook (Docker / systemd / Cloudflare Tunnel) is archived under `deploy/` for a future migration.
 

@@ -126,6 +126,7 @@
 
 ## 11. Key Timeline for This Project (Archived)
 
-- **2026-10-10**: Product complete (all 148 tests green at the time; 150 now — bilingual Chinese/English, security hardened).
+- **2026-10-10**: Product complete (all 148 tests green at the time; test suite now at 204 — bilingual Chinese/English, security hardened).
 - **2026-10-13**: Launched on Netlify + Neon; branded domain `quotemint.dpdns.org` live (HTTPS all green, www 301); full-chain e2e test passed.
 - **2026-10-14**: Alipay payment QR code live (¥68/year); support@ mailbox fully working (alias + QQ auto-forward, two-way send/receive tested); all documents bilingual; private ops repository `quotemint-ops` created.
+- **2026-10-15**: Hidden admin panel `/admin` live (Pro grant/revoke, quotes browsing, stats, audit); email capability shipped (zero-dep SMTP client, password reset, accept notifications, renewal reminders) with Tencent Exmail SMTP configured and send verified live; UptimeRobot uptime monitoring with email alerts; dev-session permission allowlist.

@@ -99,7 +99,7 @@ netlify/
 netlify.toml                       平台配置：publish=public、改写到函数、NODE_VERSION=22
 public/                            静态资源（样式、页面脚本、favicon、支付宝收款码）
 scripts/seed.js                    本地演示数据；scripts/grant.js 人工开通 Pro（连生产库）
-test/                              150 项单元 + 集成测试（npm test）
+test/                              204 项单元 + 集成测试（npm test）
 ```
 
 ## 6. 数据放在哪里（"我的数据在哪"）
