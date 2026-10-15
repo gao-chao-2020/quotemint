@@ -50,6 +50,8 @@
 
 - 症状：部署被拦，提示检测到密钥——其实只是 `NODE_ENV` / `BASE_URL` 的普通值出现在了仓库文件里。
 - 解法：设环境变量 `SECRETS_SCAN_OMIT_KEYS=NODE_ENV,BASE_URL`。
+- **2026-10-15 升级版（构建直接失败 "Exposed secrets detected"）**：把 `MAIL_FROM` 等勾选为 Secret 后，其值 `support@quotemint.dpdns.org` 本身就在仓库文档里 → 全量扫描命中、**构建失败**。解法：`SECRETS_SCAN_OMIT_KEYS` 追加 `MAIL_FROM,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER`。
+- **教训：给环境变量勾"Secret"之前，先 `git grep` 一下该值是否出现在仓库里**——是则要么不勾，要么同时加入 OMIT_KEYS。
 
 ### 3.4 双驱动数据库（本地开发 / 云端生产无缝切换）
 
@@ -99,6 +101,7 @@
 | Render 免费档无法开通 | 强制绑国际银行卡 | 换平台（本项目的选型三关之一） |
 | 首部署函数崩溃 Invalid URL | 打包后 `import.meta.url` 为空（§3.2） | 懒加载 + LAMBDA_TASK_ROOT 回退 |
 | 部署被密钥扫描拦 | NODE_ENV/BASE_URL 字面值误报 | `SECRETS_SCAN_OMIT_KEYS` |
+| 构建失败 "Exposed secrets detected" | 勾成 Secret 的值的文本出现在仓库（如 support@… 在文档里） | `SECRETS_SCAN_OMIT_KEYS` 追加该键；勾 Secret 前先 `git grep` 值 |
 | www 域名解析错（拼了长尾巴） | CNAME 值没带结尾点 | 值带结尾点重新提交（§4） |
 | DNS 面板 API 改动报错/被拒 | 缺 CSRF 头 | 带 `X-CSRF-Token`（= cookie 值） |
 | 加 MX 记录被拒 invalid_record_value | 把优先级填进了独立字段 | 优先级嵌进 value：`"5 主机名."` |

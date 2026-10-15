@@ -50,6 +50,8 @@
 
 - Symptom: the deployment is blocked with a detected-secret warning — when really it was just ordinary values of `NODE_ENV` / `BASE_URL` that appeared in a repository file.
 - Fix: set the environment variable `SECRETS_SCAN_OMIT_KEYS=NODE_ENV,BASE_URL`.
+- **2026-10-15 upgrade (build hard-fails with "Exposed secrets detected")**: after marking `MAIL_FROM` (and siblings) as Secret, its value `support@quotemint.dpdns.org` already existed throughout the repo docs → the full scan matched → **build failure**. Fix: append `MAIL_FROM,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER` to `SECRETS_SCAN_OMIT_KEYS`.
+- **Lesson: before ticking "Contains secret values" on an env var, `git grep` its value first** — if it appears in the repo, either don't mark it secret or add its key to OMIT_KEYS.
 
 ### 3.4 Dual-Driver Database (Seamless Switching Between Local Dev / Cloud Production)
 
@@ -99,6 +101,7 @@
 | Cannot activate Render free tier | Mandatory international bank card | Switch platforms (one of this project's three selection gates) |
 | First-deploy function crash: Invalid URL | `import.meta.url` empty after bundling (§3.2) | Lazy loading + LAMBDA_TASK_ROOT fallback |
 | Deploy blocked by secrets scan | False positive on NODE_ENV/BASE_URL literals | `SECRETS_SCAN_OMIT_KEYS` |
+| Build fails "Exposed secrets detected" | Secret-marked value's text exists in the repo (e.g. support@… in docs) | Append the key to `SECRETS_SCAN_OMIT_KEYS`; `git grep` values before marking secret |
 | www domain resolves wrong (long tail appended) | CNAME value missing the trailing dot | Resubmit with a trailing dot in the value (§4) |
 | DNS panel API change errors/rejected | Missing CSRF header | Include `X-CSRF-Token` (= cookie value) |
 | Adding MX record rejected: invalid_record_value | Priority placed in the separate field | Embed the priority in the value: `"5 主机名."` |
