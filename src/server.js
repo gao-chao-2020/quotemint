@@ -233,11 +233,15 @@ export async function handleRequest(req, res) {
 
 // import.meta.main needs Node >=24.2; pathToFileURL comparison covers 22.13+.
 // A bundled CJS build (Lambda) has an empty import.meta, which must mean "not
-// main" so the function never opens a listening socket.
+// main" so the function never opens a listening socket. Bundled ESM (EdgeOne
+// Cloud Functions) keeps a real import.meta.url and runs the bundle AS the
+// process entry, so the file-name check keeps the guard false unless the
+// process was started from our own src/server.js.
 const rawMetaUrl = import.meta.url;
 const metaUrl = typeof rawMetaUrl === 'string' && rawMetaUrl ? rawMetaUrl : '';
+const isDirectRun = Boolean(process.argv[1]) && process.argv[1].endsWith('server.js');
 const isMain = metaUrl
-  ? (import.meta.main ?? (process.argv[1] ? metaUrl === pathToFileURL(process.argv[1]).href : false))
+  ? (import.meta.main ?? (isDirectRun ? metaUrl === pathToFileURL(process.argv[1]).href : false))
   : false;
 
 if (isMain) {

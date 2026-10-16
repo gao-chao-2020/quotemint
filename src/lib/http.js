@@ -137,9 +137,11 @@ export function checkOrigin(req) {
   try {
     const originHost = new URL(origin).host;
     // Proxies (Netlify, EdgeOne) may rewrite Host or append a default port;
-    // accept the origin when it matches either forwarded or direct host in
-    // any of the equivalent spellings (with/without :443/:80).
-    const rawHosts = [req.headers['x-forwarded-host'], req.headers.host];
+    // accept the origin when it matches a forwarded or injected public host
+    // in any of the equivalent spellings (with/without :443/:80). EdgeOne
+    // replaces Host with an internal domain and passes the public one in
+    // eo-pages-host.
+    const rawHosts = [req.headers['x-forwarded-host'], req.headers['eo-pages-host'], req.headers.host];
     const candidates = [];
     for (const raw of rawHosts) {
       if (!raw) continue;
