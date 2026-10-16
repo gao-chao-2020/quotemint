@@ -225,11 +225,14 @@ function openSqliteDb(dataDir) {
   let openPromise = null;
 
   // Lazy so the Postgres path (Netlify/Neon) never imports node:sqlite or
-  // touches the filesystem at module load.
+  // touches the filesystem at module load. The specifier is assembled at
+  // runtime so bundlers (esbuild on EdgeOne) cannot try to resolve node:sqlite
+  // at build time on their older builtin lists.
   function open() {
     if (!openPromise) {
       openPromise = (async () => {
-        const { DatabaseSync } = await import('node:sqlite');
+        const sqliteBuiltin = ['node', 'sqlite'].join(':');
+        const { DatabaseSync } = await import(sqliteBuiltin);
         mkdirSync(dataDir, { recursive: true });
         const db = new DatabaseSync(dbPathFor(dataDir));
         db.exec('PRAGMA journal_mode = WAL;');
