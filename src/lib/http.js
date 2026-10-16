@@ -136,8 +136,16 @@ export function checkOrigin(req) {
   if (!origin) return true;
   try {
     const originHost = new URL(origin).host;
-    const host = req.headers.host;
-    return Boolean(host) && originHost === host;
+    // Proxies (Netlify, EdgeOne) may rewrite Host or append a default port;
+    // accept the origin when it matches either forwarded or direct host in
+    // any of the equivalent spellings (with/without :443/:80).
+    const rawHosts = [req.headers['x-forwarded-host'], req.headers.host];
+    const candidates = [];
+    for (const raw of rawHosts) {
+      if (!raw) continue;
+      candidates.push(raw, raw.replace(/:(443|80)$/, ''));
+    }
+    return candidates.includes(originHost);
   } catch {
     return false;
   }
@@ -150,6 +158,11 @@ export function enforceCsrf(req, res) {
     return false;
   }
   if (!checkOrigin(req)) {
+    console.error('[csrf-origin] mismatch', JSON.stringify({
+      origin: req.headers.origin,
+      host: req.headers.host,
+      xForwardedHost: req.headers['x-forwarded-host']
+    }));
     sendError(res, 403, 'origin', 'Origin does not match Host');
     return false;
   }
