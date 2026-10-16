@@ -8,6 +8,7 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
+    "express": "file:vendor/express",
     "pg": "^8.13.0"
   },
   "scripts": {

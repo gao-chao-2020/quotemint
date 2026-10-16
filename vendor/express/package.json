@@ -1,0 +1,9 @@
+{
+  "name": "express",
+  "version": "0.0.0-quotemint-shim",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Express-compatible shim used only by the EdgeOne Makers entry",
+  "main": "index.js",
+  "exports": "./index.js"
+}
