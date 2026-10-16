@@ -1,6 +1,11 @@
-// EdgeOne Makers Node.js function entry (req/res probe).
-// Validates the runtime dispatch convention before the app is mounted.
-export default function handler(req, res) {
+// EdgeOne Makers Node.js function entry — framework-mode probe.
+// Mirrors an Express app's callable shape (function + .handle) to verify the
+// runtime dispatches real Node (req, res) objects before the app is mounted.
+function app(req, res, next) {
+  app.handle(req, res, next);
+}
+
+app.handle = function handle(req, res) {
   let body = '';
   req.on('data', (chunk) => { body += chunk; });
   req.on('end', () => {
@@ -12,11 +17,26 @@ export default function handler(req, res) {
       node: process.version,
       method: req.method,
       url: req.url,
+      httpVersion: req.httpVersion || null,
       hasReqOn: typeof req.on,
       hasResWriteHead: typeof res.writeHead,
       hasResSetHeader: typeof res.setHeader,
-      headerKeys: req.headers ? Object.keys(req.headers).length : -1,
-      bodyEcho: body.slice(0, 200)
+      hasResEnd: typeof res.end,
+      remoteAddress: req.socket ? req.socket.remoteAddress : null,
+      xff: req.headers['x-forwarded-for'] || null,
+      host: req.headers.host || null,
+      envKeys: Object.keys(process.env).length,
+      bodyEcho: body.slice(0, 120)
     }));
   });
-}
+};
+
+app.use = function use() { return app; };
+app.listen = function listen() { return app; };
+app.set = function set() { return app; };
+app.callback = function callback() { return app; };
+app.stack = [];
+app.settings = {};
+app.locals = {};
+
+export default app;
